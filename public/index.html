@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>GF Fit Dashboard</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111114'/%3E%3Cpath d='M17 32h30M22 23v18M42 23v18M12 28v8M52 28v8' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <link rel="stylesheet" href="/css/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <div>
+          <div class="brand-row">
+            <span class="brand-mark">GF</span>
+            <p class="eyebrow">GF Fit dashboard</p>
+          </div>
+          <h1>GF Fit</h1>
+        </div>
+        <div class="hero-actions">
+          <button id="refreshButton" class="button">Новые результаты</button>
+          <div id="sourceStatus" class="status">Загрузка данных</div>
+        </div>
+      </section>
+
+      <section id="alertHost" class="alert-host"></section>
+
+      <section class="section-block today-block" aria-labelledby="todayTitle">
+        <div class="section-head">
+          <div>
+            <p class="panel-kicker">День</p>
+            <h2 id="todayTitle">Текущий день</h2>
+          </div>
+          <span id="todayDate" class="muted"></span>
+        </div>
+        <div class="day-selector-wrap">
+          <button type="button" id="daySelectorPrev" class="day-nav-arrow" aria-label="Прокрутить к предыдущим дням">‹</button>
+          <nav id="daySelector" class="day-selector" aria-label="Выбор дня"></nav>
+          <button type="button" id="daySelectorNext" class="day-nav-arrow" aria-label="Прокрутить к следующим дням">›</button>
+        </div>
+        <section class="today-grid" id="todayGrid"></section>
+        <article class="panel workday-panel">
+          <div class="workday-line">
+            <div>
+              <p class="panel-kicker">Рабочий день</p>
+              <h2 id="workdayTitle">11:00-23:00</h2>
+            </div>
+            <strong id="workdayTimeLeft">-</strong>
+          </div>
+          <div class="workday-track"><i id="workdayProgress"></i></div>
+          <div class="workday-meta">
+            <span id="workdayPercent">-</span>
+            <span id="workdayNote">Без выходных</span>
+          </div>
+        </article>
+        <article class="panel today-focus">
+          <div class="panel-head compact">
+            <div>
+              <p class="panel-kicker">Месяц</p>
+              <h2>Месяц в цифрах</h2>
+            </div>
+          </div>
+          <div id="todayComparison" class="comparison comparison-mobile"></div>
+        </article>
+      </section>
+
+      <section class="section-block period-block" aria-labelledby="periodTitle">
+        <div class="section-head">
+          <div>
+            <p class="panel-kicker">Месяц</p>
+            <h2 id="periodTitle">Итоговый отчет</h2>
+          </div>
+          <span id="periodLabel" class="muted"></span>
+        </div>
+        <section class="summary-grid" id="summaryGrid"></section>
+        <section class="content-grid period-grid">
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Доходы</p>
+                <h2>Структура</h2>
+              </div>
+            </div>
+            <div id="incomeBreakdown" class="breakdown"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Расходы</p>
+                <h2>Категории</h2>
+              </div>
+            </div>
+            <div id="expenseBreakdown" class="breakdown"></div>
+          </article>
+        </section>
+
+        <article class="panel product-panel">
+          <div class="panel-head">
+            <div>
+              <p class="panel-kicker">Закуп / продажа</p>
+              <h2>Спортпит и вода</h2>
+            </div>
+          </div>
+          <div id="productMargins" class="product-margins"></div>
+        </article>
+      </section>
+
+      <section class="section-block analytics-block" aria-labelledby="analyticsTitle">
+        <div class="section-head">
+          <div>
+            <p class="panel-kicker">Аналитика</p>
+            <h2 id="analyticsTitle">Сравнение и выводы</h2>
+          </div>
+        </div>
+        <section class="content-grid analytics-grid">
+          <article class="panel panel-wide">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Сравнение</p>
+                <h2>Что продается лучше</h2>
+              </div>
+            </div>
+            <div id="comparison" class="comparison"></div>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Выводы</p>
+                <h2>На что смотреть</h2>
+              </div>
+            </div>
+            <ul id="insights" class="insights"></ul>
+          </article>
+
+          <article class="panel">
+            <div class="panel-head">
+              <div>
+                <p class="panel-kicker">Источник</p>
+                <h2>Google Sheet</h2>
+              </div>
+            </div>
+            <div class="source-box">
+              <span class="muted">Файл</span>
+              <a id="sourceLink" href="#" target="_blank" rel="noreferrer">Открыть таблицу</a>
+              <span class="muted">Обновлено</span>
+              <strong id="updatedAt">-</strong>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section class="section-block months-block" aria-labelledby="monthsTitle">
+        <div class="section-head">
+          <div>
+            <p class="panel-kicker">Год</p>
+            <h2 id="monthsTitle">Годовой отчет</h2>
+          </div>
+        </div>
+        <article class="panel">
+          <div id="monthlyHistory" class="monthly-history"></div>
+        </article>
+      </section>
+    </main>
+
+    <script type="module" src="/js/app.js"></script>
+  </body>
+</html>
