@@ -190,18 +190,18 @@ function amountFromPair(cash, card, fallback = 0) {
 function findGfSummaryValue(rows, label) {
   const summaryStart = rows.findIndex((row) => /итог\s+дня/i.test(rowText(row)));
   const scope = summaryStart >= 0 ? rows.slice(summaryStart) : rows;
+  const labelIndexIn = (row) => row.findIndex((cell) => new RegExp(`^${label}$`, "i").test(cleanText(cell)));
   const row = [...scope].reverse().find((item) => {
-    const cells = compactCells(item);
-    const index = cells.findIndex((cell) => new RegExp(`^${label}$`, "i").test(cell));
-    return index >= 0 && cells.slice(index + 1).some((cell) => parseNumber(cell) > 0 || /^0$/.test(cell));
+    const index = labelIndexIn(item);
+    return index >= 0 && item.slice(index + 1).some((cell) => parseNumber(cell) > 0 || /^0$/.test(cleanText(cell)));
   });
   if (!row) return 0;
 
-  const cells = compactCells(row);
-  const index = cells.findIndex((cell) => new RegExp(`^${label}$`, "i").test(cell));
+  const index = labelIndexIn(row);
   if (index < 0) return 0;
 
-  return amountFromPair(cells[index + 1], cells[index + 2], cells[index + 3]);
+  // Fixed raw layout: label, blank, cash, blank, card, blank, total.
+  return amountFromPair(row[index + 2], row[index + 4], row[index + 6]);
 }
 
 function findGfExpenseLineValue(rows, matcher) {
