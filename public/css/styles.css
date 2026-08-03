@@ -714,6 +714,73 @@ h2 {
 
 .year-month {
   min-height: 104px;
+  position: relative;
+}
+
+.month-edit-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(60, 60, 67, 0.08);
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 12px;
+  line-height: 1;
+  padding: 0;
+}
+
+.month-edit-btn:hover {
+  background: rgba(60, 60, 67, 0.16);
+  color: var(--ink);
+}
+
+.year-month.editing {
+  gap: 8px;
+}
+
+.month-edit-form {
+  display: grid;
+  gap: 8px;
+}
+
+.month-edit-form label {
+  display: grid;
+  gap: 2px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.month-edit-form input {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 6px 8px;
+  font: inherit;
+  font-size: 13px;
+  color: var(--ink);
+  background: #ffffff;
+}
+
+.month-edit-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.button.small {
+  padding: 6px 12px;
+  font-size: 12px;
+  box-shadow: none;
+}
+
+.button.small.ghost {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--line);
 }
 
 .year-month strong {

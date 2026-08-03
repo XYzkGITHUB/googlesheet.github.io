@@ -1,4 +1,4 @@
-import { loadMonthlyArchive, loadSheetCsv, saveMonthlySnapshot } from "./api.js";
+import { loadMonthlyArchive, loadSheetCsv, saveMonthlySnapshot, updateMonthlyTotals } from "./api.js";
 import { parseCsv } from "./csv.js";
 import { SAMPLE_ROWS } from "./sampleData.js";
 import { normalizeRows, normalizeWorkbook } from "./normalizer.js";
@@ -56,13 +56,17 @@ async function loadDashboard() {
       fetchedAt: payload.fetchedAt,
       monthlyArchive: archivePayload.months || [],
       archiveWarning,
+      onEditMonth: (month, totals) => updateMonthlyTotals(month, totals).then((payload) => payload.months),
     });
     startWorkdayTicker();
   } catch (error) {
     if (error.code === "GOOGLE_SHEET_NOT_PUBLIC") {
       const normalized = normalizeRows(SAMPLE_ROWS);
       const archivePayload = await loadMonthlyArchive().catch(() => ({ months: [] }));
-      renderDashboard(buildDashboardModel(normalized, "demo"), { monthlyArchive: archivePayload.months || [] });
+      renderDashboard(buildDashboardModel(normalized, "demo"), {
+        monthlyArchive: archivePayload.months || [],
+        onEditMonth: (month, totals) => updateMonthlyTotals(month, totals).then((payload) => payload.months),
+      });
       startWorkdayTicker();
       return;
     }

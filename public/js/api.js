@@ -69,3 +69,23 @@ export async function saveMonthlySnapshot(snapshot) {
   if (error) throw new Error(error.message || "Не удалось обновить годовой архив");
   return loadMonthlyArchive();
 }
+
+export async function updateMonthlyTotals(month, { totalIncome, totalExpense }) {
+  const { data: existing, error: fetchError } = await supabase
+    .from("monthly_archive")
+    .select("totals")
+    .eq("month", month)
+    .maybeSingle();
+  if (fetchError) throw new Error(fetchError.message || "Не удалось загрузить месяц");
+  if (!existing) throw new Error("Месяц не найден в архиве");
+
+  const netProfit = totalIncome - totalExpense;
+  const totals = { ...existing.totals, totalIncome, totalExpense, netProfit, balance: netProfit };
+
+  const { error } = await supabase
+    .from("monthly_archive")
+    .update({ totals, updated_at: new Date().toISOString() })
+    .eq("month", month);
+  if (error) throw new Error(error.message || "Не удалось сохранить месяц");
+  return loadMonthlyArchive();
+}

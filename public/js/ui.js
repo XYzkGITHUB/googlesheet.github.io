@@ -187,6 +187,29 @@ function previousMonthDiff(item, sortedMonths) {
   return (item.totals?.netProfit || 0) - (previous.totals?.netProfit || 0);
 }
 
+function currentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+let archiveMonths = [];
+let editingMonth = null;
+let onMonthTotalsSave = null;
+
+function monthEditForm(item) {
+  const totals = item.totals || {};
+  return `
+    <form class="month-edit-form" data-month="${item.month}">
+      <label>Доход<input type="number" name="totalIncome" value="${Math.round(totals.totalIncome || 0)}" required></label>
+      <label>Расход<input type="number" name="totalExpense" value="${Math.round(totals.totalExpense || 0)}" required></label>
+      <div class="month-edit-actions">
+        <button type="submit" class="button small">Сохранить</button>
+        <button type="button" class="button small ghost" data-action="cancel-edit">Отмена</button>
+      </div>
+    </form>
+  `;
+}
+
 function renderYearArchive(year, records, sortedMonths) {
   const byMonth = new Map(records.map((item) => [Number(item.month.slice(5, 7)), item]));
   const yearIncome = records.reduce((sum, item) => sum + (item.totals?.totalIncome || 0), 0);
@@ -209,8 +232,15 @@ function renderYearArchive(year, records, sortedMonths) {
 
     const diff = previousMonthDiff(item, sortedMonths);
     const tone = (item.totals?.netProfit || 0) >= 0 ? "profit" : "loss";
+    const isCurrent = item.month === currentMonthKey();
+
+    if (editingMonth === item.month) {
+      return `<div class="year-month ${tone} editing" data-month="${item.month}">${monthEditForm(item)}</div>`;
+    }
+
     return `
-      <div class="year-month ${tone}">
+      <div class="year-month ${tone}" data-month="${item.month}">
+        ${isCurrent ? "" : `<button type="button" class="month-edit-btn" data-action="edit" aria-label="Изменить ${item.label || item.month}">✎</button>`}
         <span>${monthShortName(index)}</span>
         <strong>${money(item.totals?.netProfit)}</strong>
         <small>${diff === null ? "первый отчет" : `${signedMoney(diff)} к пред.`}</small>
@@ -262,6 +292,50 @@ function renderAnnualArchive(months) {
     .sort(([a], [b]) => b.localeCompare(a))
     .map(([year, records]) => renderYearArchive(year, records, sortedMonths))
     .join("");
+}
+
+function renderMonthlyHistory() {
+  setHtml("monthlyHistory", renderAnnualArchive(archiveMonths));
+}
+
+function wireMonthlyHistoryEvents(container) {
+  container.onclick = (event) => {
+    const editButton = event.target.closest('[data-action="edit"]');
+    if (editButton) {
+      editingMonth = editButton.closest("[data-month]").dataset.month;
+      renderMonthlyHistory();
+      return;
+    }
+    const cancelButton = event.target.closest('[data-action="cancel-edit"]');
+    if (cancelButton) {
+      editingMonth = null;
+      renderMonthlyHistory();
+    }
+  };
+
+  container.onsubmit = async (event) => {
+    const form = event.target.closest(".month-edit-form");
+    if (!form) return;
+    event.preventDefault();
+    const month = form.dataset.month;
+    const totalIncome = Number(form.totalIncome.value) || 0;
+    const totalExpense = Number(form.totalExpense.value) || 0;
+    const submitButton = form.querySelector('button[type="submit"]');
+    submitButton.disabled = true;
+    submitButton.textContent = "Сохранение...";
+
+    try {
+      if (!onMonthTotalsSave) throw new Error("Редактирование недоступно в демо-режиме");
+      const months = await onMonthTotalsSave(month, { totalIncome, totalExpense });
+      archiveMonths = months || archiveMonths;
+      editingMonth = null;
+      renderMonthlyHistory();
+    } catch (error) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Сохранить";
+      alert(error.message || "Не удалось сохранить месяц");
+    }
+  };
 }
 
 function sortedDayRecords(model) {
@@ -445,7 +519,12 @@ export function renderDashboard(model, meta = {}) {
   setHtml("productMargins", renderProductMargins(productMargins || []));
   setHtml("comparison", renderCategoryComparison(incomeRanking, totals.totalIncome));
   setHtml("insights", model.insights.map((item) => `<li class="${item.tone}">${item.text}</li>`).join(""));
-  setHtml("monthlyHistory", renderAnnualArchive(meta.monthlyArchive || []));
+
+  archiveMonths = meta.monthlyArchive || [];
+  onMonthTotalsSave = meta.onEditMonth || null;
+  editingMonth = null;
+  renderMonthlyHistory();
+  wireMonthlyHistoryEvents(document.getElementById("monthlyHistory"));
 
   const warnings = [...(model.warnings || [])];
   if (model.sourceMode === "demo") warnings.unshift("Таблица закрыта. Показаны демо-цифры.");
