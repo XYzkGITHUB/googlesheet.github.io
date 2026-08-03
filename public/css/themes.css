@@ -166,6 +166,95 @@
   background: var(--surface-3);
 }
 
+/* v1 ships several hardcoded light backgrounds (rgba(255,255,255,...)) and
+   near-black fills. On a dark canvas those turn into pale blocks with muted
+   grey labels on top — unreadable. Remap them to theme surfaces. */
+:root[data-theme="dark"] .compare-row,
+:root[data-theme="ocean"] .compare-row,
+:root[data-theme="dark"] .product-card,
+:root[data-theme="ocean"] .product-card,
+:root[data-theme="dark"] .day-chip,
+:root[data-theme="ocean"] .day-chip {
+  background: var(--surface-2);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .product-stats div,
+:root[data-theme="ocean"] .product-stats div,
+:root[data-theme="dark"] .insights li,
+:root[data-theme="ocean"] .insights li,
+:root[data-theme="dark"] .bar,
+:root[data-theme="ocean"] .bar,
+:root[data-theme="dark"] .workday-track,
+:root[data-theme="ocean"] .workday-track {
+  background: var(--surface-3);
+}
+
+/* Progress/breakdown fills are #111114 in the base sheet — invisible here. */
+:root[data-theme="dark"] .bar i,
+:root[data-theme="ocean"] .bar i,
+:root[data-theme="dark"] .workday-track i,
+:root[data-theme="ocean"] .workday-track i {
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+
+:root[data-theme="dark"] .insights li.good,
+:root[data-theme="ocean"] .insights li.good {
+  background: color-mix(in srgb, var(--pos) 16%, transparent);
+  color: var(--pos);
+}
+
+:root[data-theme="dark"] .insights li.warn,
+:root[data-theme="ocean"] .insights li.warn {
+  background: color-mix(in srgb, var(--warn) 18%, transparent);
+  color: var(--warn);
+}
+
+:root[data-theme="dark"] .insights li.bad,
+:root[data-theme="ocean"] .insights li.bad {
+  background: color-mix(in srgb, var(--neg) 16%, transparent);
+  color: var(--neg);
+}
+
+:root[data-theme="dark"] .alert,
+:root[data-theme="ocean"] .alert {
+  background: color-mix(in srgb, var(--warn) 16%, transparent);
+  border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .alert.danger,
+:root[data-theme="ocean"] .alert.danger {
+  background: color-mix(in srgb, var(--neg) 16%, transparent);
+  border-color: color-mix(in srgb, var(--neg) 32%, transparent);
+  color: var(--neg);
+}
+
+:root[data-theme="dark"] .product-card.loss .product-title strong,
+:root[data-theme="ocean"] .product-card.loss .product-title strong,
+:root[data-theme="dark"] .product-card.missing .product-title strong,
+:root[data-theme="ocean"] .product-card.missing .product-title strong,
+:root[data-theme="dark"] .metric.loss-tone strong,
+:root[data-theme="ocean"] .metric.loss-tone strong {
+  color: var(--neg);
+}
+
+/* The active day chip is near-black in the base sheet, which reads as a hole
+   against a dark surface — use the accent instead. */
+:root[data-theme="dark"] .day-chip.active,
+:root[data-theme="ocean"] .day-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
+:root[data-theme="dark"] .day-chip.active span,
+:root[data-theme="ocean"] .day-chip.active span,
+:root[data-theme="dark"] .day-chip.active small,
+:root[data-theme="ocean"] .day-chip.active small {
+  color: #fff;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
