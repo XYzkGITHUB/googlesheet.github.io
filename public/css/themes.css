@@ -1,0 +1,177 @@
+/* Theme tokens. Loaded after styles.css so :root here wins, and the
+   [data-theme] selectors outrank the base :root block in styles.css. */
+
+:root {
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
+  --dur: 0.45s;
+
+  --app-bg:
+    radial-gradient(circle at 10% -10%, rgba(214, 181, 109, 0.22), transparent 28%),
+    radial-gradient(circle at 85% 5%, rgba(17, 19, 24, 0.18), transparent 34%),
+    linear-gradient(180deg, #f7f7f8 0%, #eef0f4 55%, #e7e9ee 100%);
+  --surface: rgba(255, 255, 255, 0.9);
+  --surface-2: rgba(255, 255, 255, 0.62);
+  --surface-3: rgba(60, 60, 67, 0.05);
+  --border: rgba(60, 60, 67, 0.12);
+  --text-strong: #1d1d1f;
+  --text-dim: #6e6e73;
+  --accent: #0071e3;
+  --accent-2: #34aadc;
+  --pos: #1f9254;
+  --neg: #d1401f;
+  --warn: #b7791f;
+  --shadow-lg: 0 18px 50px rgba(9, 12, 18, 0.1);
+  --shadow-pop: 0 24px 70px rgba(9, 12, 18, 0.22);
+  --header-bg: linear-gradient(135deg, #111318, #1c2028);
+  --header-text: #ffffff;
+}
+
+/* ---- Light (explicit) ---- */
+:root[data-theme="light"] {
+  color-scheme: light;
+}
+
+/* ---- Mint: cool light neutral, emerald accent ---- */
+:root[data-theme="mint"] {
+  color-scheme: light;
+  --bg: #eef3f0;
+  --app-bg:
+    radial-gradient(circle at 12% -10%, rgba(52, 211, 153, 0.20), transparent 30%),
+    radial-gradient(circle at 88% 2%, rgba(14, 159, 110, 0.12), transparent 34%),
+    linear-gradient(180deg, #f7faf8 0%, #eef3f0 58%, #e4ebe7 100%);
+  --panel: rgba(255, 255, 255, 0.92);
+  --panel-strong: #ffffff;
+  --surface: rgba(255, 255, 255, 0.92);
+  --surface-2: rgba(255, 255, 255, 0.66);
+  --surface-3: rgba(16, 76, 56, 0.06);
+  --line: rgba(16, 76, 56, 0.13);
+  --border: rgba(16, 76, 56, 0.13);
+  --text: #16241e;
+  --ink: #16241e;
+  --text-strong: #0f1d17;
+  --muted: #5f7268;
+  --text-dim: #5f7268;
+  --accent: #0e9f6e;
+  --accent-2: #34d399;
+  --blue: #0e9f6e;
+  --pos: #0e9f6e;
+  --neg: #d64545;
+  --warn: #b7791f;
+  --gold: #34d399;
+  --shadow-lg: 0 18px 50px rgba(16, 76, 56, 0.12);
+  --header-bg: linear-gradient(135deg, #12241d, #1e3d31);
+}
+
+/* ---- Dark ---- */
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #15171c;
+  --app-bg:
+    radial-gradient(circle at 10% -10%, rgba(214, 181, 109, 0.12), transparent 30%),
+    radial-gradient(circle at 88% 4%, rgba(0, 113, 227, 0.14), transparent 34%),
+    linear-gradient(180deg, #1a1d23 0%, #15171c 55%, #101216 100%);
+  --panel: rgba(38, 42, 50, 0.86);
+  --panel-strong: #23262d;
+  --surface: rgba(38, 42, 50, 0.86);
+  --surface-2: rgba(46, 51, 60, 0.6);
+  --surface-3: rgba(255, 255, 255, 0.06);
+  --line: rgba(255, 255, 255, 0.11);
+  --border: rgba(255, 255, 255, 0.11);
+  --text: #eceef2;
+  --ink: #f4f5f7;
+  --text-strong: #f4f5f7;
+  --muted: #9aa0ab;
+  --text-dim: #9aa0ab;
+  --accent: #4c9dff;
+  --accent-2: #7bc0ff;
+  --blue: #4c9dff;
+  --pos: #3ecf8e;
+  --neg: #ff6b4a;
+  --warn: #e3b341;
+  --gold: #d6b56d;
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.45);
+  --shadow-pop: 0 24px 70px rgba(0, 0, 0, 0.6);
+  --header-bg: linear-gradient(135deg, #22262e, #2e343f);
+}
+
+/* ---- Ocean: deep teal-navy, cyan accent ---- */
+:root[data-theme="ocean"] {
+  color-scheme: dark;
+  --bg: #071a24;
+  --app-bg:
+    radial-gradient(circle at 8% -12%, rgba(34, 184, 207, 0.20), transparent 32%),
+    radial-gradient(circle at 92% 2%, rgba(47, 214, 163, 0.12), transparent 36%),
+    linear-gradient(180deg, #0c2735 0%, #081d28 55%, #05131b 100%);
+  --panel: rgba(14, 42, 56, 0.84);
+  --panel-strong: #103241;
+  --surface: rgba(14, 42, 56, 0.84);
+  --surface-2: rgba(20, 56, 73, 0.6);
+  --surface-3: rgba(120, 220, 255, 0.08);
+  --line: rgba(120, 220, 255, 0.16);
+  --border: rgba(120, 220, 255, 0.16);
+  --text: #dff0f7;
+  --ink: #eefaff;
+  --text-strong: #eefaff;
+  --muted: #8fb3c4;
+  --text-dim: #8fb3c4;
+  --accent: #22b8cf;
+  --accent-2: #63e6e2;
+  --blue: #22b8cf;
+  --pos: #2fd6a3;
+  --neg: #ff6b6b;
+  --warn: #ffc078;
+  --gold: #63e6e2;
+  --shadow-lg: 0 18px 50px rgba(0, 0, 0, 0.5);
+  --shadow-pop: 0 24px 70px rgba(3, 14, 20, 0.7);
+  --header-bg: linear-gradient(135deg, #0b2a38, #0e3d4d);
+}
+
+:root[data-theme] body {
+  background: var(--app-bg);
+  background-attachment: fixed;
+  color: var(--text);
+  transition: background-color var(--dur) var(--ease), color var(--dur) var(--ease);
+}
+
+/* Keep the v1 hero readable across themes. */
+:root[data-theme="dark"] .hero,
+:root[data-theme="ocean"] .hero,
+:root[data-theme="mint"] .hero {
+  background: var(--header-bg);
+}
+
+:root[data-theme="dark"] .metric,
+:root[data-theme="ocean"] .metric,
+:root[data-theme="dark"] .panel,
+:root[data-theme="ocean"] .panel,
+:root[data-theme="dark"] .year-topline > div,
+:root[data-theme="ocean"] .year-topline > div,
+:root[data-theme="dark"] .year-month,
+:root[data-theme="ocean"] .year-month {
+  background: var(--surface);
+  color: var(--text);
+}
+
+:root[data-theme="dark"] .month-edit-form input,
+:root[data-theme="ocean"] .month-edit-form input,
+:root[data-theme="dark"] .button.small,
+:root[data-theme="ocean"] .button.small {
+  background: var(--surface-2);
+  color: var(--text);
+  border-color: var(--border);
+}
+
+:root[data-theme="dark"] .empty-month,
+:root[data-theme="ocean"] .empty-month {
+  background: var(--surface-3);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

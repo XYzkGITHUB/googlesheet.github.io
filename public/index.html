@@ -6,9 +6,12 @@
     <title>GF Fit Dashboard</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111114'/%3E%3Cpath d='M17 32h30M22 23v18M42 23v18M12 28v8M52 28v8' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
     <link rel="stylesheet" href="/css/styles.css" />
+    <link rel="stylesheet" href="/css/themes.css" />
+    <link rel="stylesheet" href="/css/layouts.css" />
+    <link rel="stylesheet" href="/css/toolbar.css" />
   </head>
   <body>
-    <main class="shell">
+    <main class="shell" id="layoutV1">
       <section class="hero">
         <div>
           <div class="brand-row">
@@ -18,7 +21,7 @@
           <h1>GF Fit</h1>
         </div>
         <div class="hero-actions">
-          <button id="refreshButton" class="button">Новые результаты</button>
+          <button id="refreshButton" class="button" data-action="refresh">Новые результаты</button>
           <div id="sourceStatus" class="status">Загрузка данных</div>
         </div>
       </section>
@@ -163,6 +166,9 @@
         </article>
       </section>
     </main>
+
+    <div id="layoutV2" hidden></div>
+    <div id="layoutV3" hidden></div>
 
     <script type="module" src="/js/app.js"></script>
   </body>
