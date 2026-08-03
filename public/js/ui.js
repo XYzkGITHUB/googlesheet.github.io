@@ -298,6 +298,22 @@ function renderMonthlyHistory() {
   setHtml("monthlyHistory", renderAnnualArchive(archiveMonths));
 }
 
+export function updateMonthlyArchive(months, onEditMonth) {
+  archiveMonths = months || [];
+  onMonthTotalsSave = onEditMonth || null;
+  editingMonth = null;
+  renderMonthlyHistory();
+  wireMonthlyHistoryEvents(document.getElementById("monthlyHistory"));
+}
+
+export function appendWarning(message) {
+  const host = document.getElementById("alertHost");
+  const div = document.createElement("div");
+  div.className = "alert";
+  div.textContent = message;
+  host.appendChild(div);
+}
+
 function wireMonthlyHistoryEvents(container) {
   container.onclick = (event) => {
     const editButton = event.target.closest('[data-action="edit"]');
