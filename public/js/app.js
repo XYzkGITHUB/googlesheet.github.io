@@ -163,7 +163,8 @@ watchSystemTheme(() => applyTheme(readPrefs().theme));
 mountToolbar(repaint, {
   getMonthData: () => ({
     period: current.model?.activePeriod || current.model?.dailyRecords?.[0]?.date?.slice(0, 7) || "",
-    archives: current.meta?.monthlyArchive || [],
+    canCreate: !!current.model?.activePeriod,
+    archives: current.model?.activePeriod ? current.meta?.monthlyArchive || [] : [],
   }),
   createMonth: async (period, adminToken, onProgress) => {
     const result = await createNextMonth(period, adminToken, onProgress);

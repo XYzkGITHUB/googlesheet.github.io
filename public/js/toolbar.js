@@ -68,10 +68,11 @@ function render() {
       <div class="tb-section tb-month-section">
         <p class="tb-title">Новый месяц</p>
         <p class="tb-note">Текущий: ${escapeHtml(monthData.period || "загрузка")}. При создании итоги попадут в «Архив» Google Таблицы.</p>
+        ${monthData.canCreate ? "" : '<p class="tb-note">Создание месяца доступно после подключения сайта к Netlify и обновления Apps Script.</p>'}
         <form id="tbMonthForm" class="tb-month-form">
-          <label>Следующий месяц<input name="period" type="month" value="${escapeHtml(upcoming)}" min="${escapeHtml(upcoming)}" max="${escapeHtml(upcoming)}" required ${upcoming ? "" : "disabled"}></label>
+          <label>Следующий месяц<input name="period" type="month" value="${escapeHtml(upcoming)}" min="${escapeHtml(upcoming)}" max="${escapeHtml(upcoming)}" required ${upcoming && monthData.canCreate ? "" : "disabled"}></label>
           <label>Ключ администратора<input name="adminToken" type="password" autocomplete="off" required></label>
-          <button type="submit" ${upcoming ? "" : "disabled"}>Создать месяц и сохранить архив</button>
+          <button type="submit" ${upcoming && monthData.canCreate ? "" : "disabled"}>Создать месяц и сохранить архив</button>
         </form>
         <p class="tb-month-status" role="status">${escapeHtml(monthMessage)}</p>
       </div>
