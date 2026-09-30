@@ -12,7 +12,7 @@ import { mountToolbar, refreshToolbar } from "./toolbar.js";
 import { renderSubscriptionGoal } from "./goal.js";
 import { loadBridgeDashboard, bridgeDashboardModel, createNextMonth, archiveToMonthlyHistory } from "./bridge.js";
 
-const CACHE_KEY = "gf-fit-dashboard-cache-v2";
+const CACHE_KEY = "gf-fit-dashboard-cache-v3";
 
 function readCache() {
   try {
@@ -142,7 +142,7 @@ async function loadDashboard() {
     }
     const payload = await loadSheetCsv();
     const normalized = Array.isArray(payload.sheets)
-      ? normalizeWorkbook(payload.sheets.map((sheet) => ({ ...sheet, rows: parseCsv(sheet.csv) })))
+      ? normalizeWorkbook(payload.sheets.map((sheet) => ({ ...sheet, rows: parseCsv(sheet.csv, { preserveEmptyRows: true }) })))
       : normalizeRows(parseCsv(payload.csv));
     const model = buildDashboardModel(normalized, "live");
     renderThenSyncArchive(model, { fetchedAt: payload.fetchedAt }, cached?.monthlyArchive || []);

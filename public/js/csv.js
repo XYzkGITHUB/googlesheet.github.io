@@ -1,4 +1,4 @@
-export function parseCsv(csv) {
+export function parseCsv(csv, { preserveEmptyRows = false } = {}) {
   const rows = [];
   let row = [];
   let value = "";
@@ -28,7 +28,7 @@ export function parseCsv(csv) {
     if (!quoted && (char === "\n" || char === "\r")) {
       if (char === "\r" && next === "\n") i += 1;
       row.push(value);
-      if (row.some((cell) => cell.trim() !== "")) rows.push(row);
+      if (preserveEmptyRows || row.some((cell) => cell.trim() !== "")) rows.push(row);
       row = [];
       value = "";
       continue;

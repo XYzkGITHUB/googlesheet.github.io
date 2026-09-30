@@ -1,26 +1,52 @@
-import { SHEET_SOURCE, SUPABASE_ANON_KEY, SUPABASE_URL } from "./config.js";
+import { SHEET_SOURCE } from "./config.js";
 import { supabase } from "./supabaseClient.js";
 
-export async function loadSheetCsv() {
-  const params = new URLSearchParams({
-    spreadsheetId: SHEET_SOURCE.spreadsheetId,
-    gid: SHEET_SOURCE.gid,
-  });
-  const response = await fetch(`${SUPABASE_URL}/functions/v1/gym-report?${params.toString()}`, {
-    cache: "no-store",
-    headers: {
-      apikey: SUPABASE_ANON_KEY,
-      authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-    },
-  });
-  const payload = await response.json();
-  if (!response.ok || !payload.ok) {
-    const error = new Error(payload.message || "Не удалось загрузить таблицу");
-    error.code = payload.code || "LOAD_ERROR";
-    error.payload = payload;
-    throw error;
+const GOOGLE_SHEETS = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_SOURCE.spreadsheetId)}`;
+
+async function readGoogleText(url) {
+  const response = await fetch(url, { cache: "no-store" });
+  if (!response.ok) throw new Error("Не удалось загрузить данные Google Таблицы");
+  const body = await response.text();
+  if (body.trimStart().startsWith("<!DOCTYPE html") && url.includes("/export?")) {
+    throw new Error("Google Таблица не отдает CSV без входа");
   }
-  return payload;
+  return body;
+}
+
+function workbookTabs(html) {
+  // The visualization CSV drops source rows and text in mixed-type columns.
+  // The public workbook HTML contains stable IDs for the lossless CSV export.
+  const tabs = [...html.matchAll(/\\\"(\d+)\\\",\[\{\\\"1\\\":\[\[0,0,\\\"([^\\\"]+)\\\"/g)]
+    .map((match) => ({ gid: match[1], name: match[2] }));
+  return [...new Map(tabs.map((tab) => [tab.gid, tab])).values()];
+}
+
+async function mapWithConcurrency(items, limit, mapper) {
+  const results = new Array(items.length);
+  let cursor = 0;
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, async () => {
+    while (cursor < items.length) {
+      const index = cursor++;
+      results[index] = await mapper(items[index]);
+    }
+  }));
+  return results;
+}
+
+export async function loadSheetCsv() {
+  const html = await readGoogleText(`${GOOGLE_SHEETS}/edit?gid=${encodeURIComponent(SHEET_SOURCE.gid)}`);
+  const tabs = workbookTabs(html);
+  if (!tabs.length) throw new Error("Не удалось найти вкладки Google Таблицы");
+  const sheets = await mapWithConcurrency(tabs, 8, async ({ gid, name }) => ({
+    name,
+    csv: await readGoogleText(`${GOOGLE_SHEETS}/export?format=csv&gid=${encodeURIComponent(gid)}`),
+  }));
+  return {
+    ok: true,
+    source: { ...SHEET_SOURCE, format: "google-export" },
+    fetchedAt: new Date().toISOString(),
+    sheets,
+  };
 }
 
 function rowToMonth(row) {

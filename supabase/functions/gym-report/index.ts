@@ -61,20 +61,19 @@ async function fetchGoogleSheet(url: URL) {
   const gid = getParam(url, "gid", defaultSource.gid);
   const workbookUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/edit?gid=${encodeURIComponent(gid)}`;
   const { text: workbookHtml } = await fetchTextWithRetry(workbookUrl);
-  const sheetNames = [...workbookHtml.matchAll(/docs-sheet-tab-caption">([^<]+)<\/div>/g)]
-    .map((match) => match[1].replace(/&amp;/g, "&").trim())
-    .filter(Boolean);
+  const sheetTabs = [...workbookHtml.matchAll(/\\\"(\d+)\\\",\[\{\\\"1\\\":\[\[0,0,\\\"([^\\\"]+)\\\"/g)]
+    .map((match) => ({ gid: match[1], name: match[2] }));
 
-  if (sheetNames.length) {
-    const sheets = await mapWithConcurrency(sheetNames, 8, async (name) => {
-      const sheetUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/gviz/tq?tqx=out:csv&sheet=${encodeURIComponent(name)}`;
+  if (sheetTabs.length) {
+    const sheets = await mapWithConcurrency(sheetTabs, 8, async ({ gid: tabGid, name }) => {
+      const sheetUrl = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(spreadsheetId)}/export?format=csv&gid=${encodeURIComponent(tabGid)}`;
       const { text: csv } = await fetchTextWithRetry(sheetUrl);
       return { name, csv };
     });
 
     return json(200, {
       ok: true,
-      source: { spreadsheetId, gid },
+      source: { spreadsheetId, gid, format: "google-export" },
       fetchedAt: new Date().toISOString(),
       sheets,
     });
