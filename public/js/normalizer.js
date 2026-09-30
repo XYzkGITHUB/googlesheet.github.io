@@ -160,6 +160,10 @@ function extractGfReportDate(rows, sheetName = "") {
   const sheetDay = dayNumberFromSheetName(sheetName);
   const dateRow = rows.find((row) => /день\s*\d{1,2}/i.test(rowText(row)) && /\d{4}/.test(rowText(row)));
   const text = dateRow ? rowText(dateRow) : "";
+  const headerDate = parseDate(text);
+  if (sheetDay && headerDate) {
+    return { date: `${headerDate.slice(0, 7)}-${String(sheetDay).padStart(2, "0")}`, rawDate: cleanText(sheetName) };
+  }
   const year = text.match(/(20\d{2})/)?.[1];
   const monthWord = Object.keys(ruMonths).find((month) => new RegExp(month, "i").test(text));
   if (sheetDay && year && monthWord) {
