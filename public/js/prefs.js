@@ -14,8 +14,7 @@ export const THEMES = [
   { id: "ocean", name: "Океан", dot: "linear-gradient(135deg,#0e3d4d,#22b8cf)" },
 ];
 
-// v1 + light is the original look — the default must stay byte-identical to
-// what shipped before. "auto" is opt-in only.
+// Keep the familiar layout as the default. "auto" is opt-in only.
 const DEFAULTS = { layout: "v1", theme: "light" };
 
 export function readPrefs() {

@@ -254,6 +254,7 @@ function parseGfDailyReport(rows, sheetName = "") {
   };
   const totalIncome = Object.values(income).reduce((sum, item) => sum + item, 0);
   const resolvedExpense = totalExpense || Object.values(expenses).reduce((sum, item) => sum + item, 0);
+  const membershipsCount = countGfMemberships(rows);
   const warnings = [];
 
   if (!date) warnings.push("Секция итогов GF Fit найдена, но дата не распознана");
@@ -265,8 +266,8 @@ function parseGfDailyReport(rows, sheetName = "") {
         rawDate,
         dayNumber,
         sheetName,
-        membershipsCount: countGfMemberships(rows),
-        goalSubscriptionsCount: countGfMemberships(rows),
+        membershipsCount,
+        goalSubscriptionsCount: membershipsCount,
         income,
         expenses,
         totalIncome,

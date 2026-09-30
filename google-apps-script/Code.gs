@@ -2,7 +2,8 @@
  * GymFitTrack spreadsheet bridge.
  * Install as a bound Apps Script project in the source spreadsheet and deploy
  * as a Web app that executes as the owner. Set Script Property SHARED_SECRET.
- * It reads existing tabs. Setup actions create new tabs only.
+ * It reads existing tabs. Setup adds the monthly snapshot to «Архив» and
+ * creates new daily tabs; existing reports and daily tabs are untouched.
  */
 const GYM_SHEET_ID = "16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U";
 const GYM_FIRST_MONTH = "2026-09";
