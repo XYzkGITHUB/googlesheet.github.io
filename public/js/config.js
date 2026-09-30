@@ -1,7 +1,8 @@
 export const SHEET_SOURCE = {
   spreadsheetId: "16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U",
-  gid: "38748627",
-  url: "https://docs.google.com/spreadsheets/d/16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U/edit?gid=38748627#gid=38748627",
+  gid: "1382422924",
+  url: "https://docs.google.com/spreadsheets/d/16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U/edit?gid=1382422924#gid=1382422924",
+  archiveUrl: "https://docs.google.com/spreadsheets/d/16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U/edit?gid=1901370921#gid=1901370921",
 };
 
 // Anon/public key: safe to ship to the browser, access is scoped by the

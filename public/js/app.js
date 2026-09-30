@@ -8,9 +8,11 @@ import { applyTheme, readPrefs, watchSystemTheme } from "./prefs.js";
 import { clearTickers } from "./anim.js";
 import { renderV2 } from "./layoutV2.js";
 import { renderV3, updateV3Archive } from "./layoutV3.js";
-import { mountToolbar } from "./toolbar.js";
+import { mountToolbar, refreshToolbar } from "./toolbar.js";
+import { renderSubscriptionGoal } from "./goal.js";
+import { loadBridgeDashboard, bridgeDashboardModel, createNextMonth, archiveToMonthlyHistory } from "./bridge.js";
 
-const CACHE_KEY = "gf-fit-dashboard-cache-v1";
+const CACHE_KEY = "gf-fit-dashboard-cache-v2";
 
 function readCache() {
   try {
@@ -66,6 +68,7 @@ async function syncMonthlyArchive(model) {
 
 function paint(model, meta) {
   current = { model, meta };
+  renderSubscriptionGoal(model);
   const { layout } = readPrefs();
   const hosts = {
     v1: document.getElementById("layoutV1"),
@@ -76,8 +79,9 @@ function paint(model, meta) {
   clearTickers();
   for (const [id, host] of Object.entries(hosts)) host.hidden = id !== layout;
 
-  const ctx = { onEditMonth: editMonthHandler };
-  const fullMeta = { ...meta, onEditMonth: editMonthHandler };
+  const archiveEditor = meta.archiveReadOnly ? null : editMonthHandler;
+  const ctx = { onEditMonth: archiveEditor };
+  const fullMeta = { ...meta, onEditMonth: archiveEditor };
 
   if (layout === "v2") renderV2(hosts.v2, model, fullMeta, ctx);
   else if (layout === "v3") renderV3(hosts.v3, model, fullMeta, ctx);
@@ -85,6 +89,8 @@ function paint(model, meta) {
     renderDashboard(model, fullMeta);
     startWorkdayTicker();
   }
+
+  refreshToolbar();
 
   window.scrollTo({ top: 0 });
 }
@@ -126,6 +132,14 @@ async function loadDashboard() {
   }
 
   try {
+    const bridge = await loadBridgeDashboard();
+    if (bridge) {
+      const model = bridgeDashboardModel(bridge);
+      const months = (bridge.archives || []).map(archiveToMonthlyHistory);
+      paint(model, { fetchedAt: bridge.generatedAt, monthlyArchive: months, archiveReadOnly: true });
+      writeCache({ model, monthlyArchive: months, meta: { fetchedAt: bridge.generatedAt, archiveReadOnly: true } });
+      return;
+    }
     const payload = await loadSheetCsv();
     const normalized = Array.isArray(payload.sheets)
       ? normalizeWorkbook(payload.sheets.map((sheet) => ({ ...sheet, rows: parseCsv(sheet.csv) })))
@@ -146,7 +160,17 @@ async function loadDashboard() {
 
 applyTheme(readPrefs().theme);
 watchSystemTheme(() => applyTheme(readPrefs().theme));
-mountToolbar(repaint);
+mountToolbar(repaint, {
+  getMonthData: () => ({
+    period: current.model?.activePeriod || current.model?.dailyRecords?.[0]?.date?.slice(0, 7) || "",
+    archives: current.meta?.monthlyArchive || [],
+  }),
+  createMonth: async (period, adminToken, onProgress) => {
+    const result = await createNextMonth(period, adminToken, onProgress);
+    if (result.complete) await loadDashboard();
+    return result;
+  },
+});
 
 document.addEventListener("click", (event) => {
   if (event.target.closest('[data-action="refresh"]')) loadDashboard();

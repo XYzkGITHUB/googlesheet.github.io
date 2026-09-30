@@ -73,7 +73,6 @@ export function renderV2(container, model, meta, ctx) {
     <div class="v2">
       <header class="v2-top" data-reveal>
         <div class="v2-brand">
-          <span class="v2-mark">GF</span>
           <div>
             <strong>GF Fit</strong>
             <small data-clock></small>
@@ -81,7 +80,7 @@ export function renderV2(container, model, meta, ctx) {
         </div>
         <div class="v2-top-actions">
           <span class="pill ${isDemo ? "pill-warn" : "pill-live"}">
-            <i class="dot"></i>${isDemo ? "Демо" : "Live"}
+            <i class="dot"></i>${isDemo ? "Демо" : "Данные"}
           </span>
           <button class="v2-refresh" data-action="refresh" type="button">${icons.refresh(16)}<span>Обновить</span></button>
         </div>

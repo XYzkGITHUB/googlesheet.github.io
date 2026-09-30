@@ -153,7 +153,19 @@ function rowText(row) {
 }
 
 function extractGfReportDate(rows, sheetName = "") {
+  const exactDate = parseDate(sheetName);
+  if (/^\d{4}-\d{2}-\d{2}$/.test(sheetName) && exactDate) {
+    return { date: exactDate, rawDate: sheetName };
+  }
   const sheetDay = dayNumberFromSheetName(sheetName);
+  const dateRow = rows.find((row) => /день\s*\d{1,2}/i.test(rowText(row)) && /\d{4}/.test(rowText(row)));
+  const text = dateRow ? rowText(dateRow) : "";
+  const year = text.match(/(20\d{2})/)?.[1];
+  const monthWord = Object.keys(ruMonths).find((month) => new RegExp(month, "i").test(text));
+  if (sheetDay && year && monthWord) {
+    const date = `${year}-${ruMonths[monthWord]}-${String(sheetDay).padStart(2, "0")}`;
+    return { date, rawDate: cleanText(sheetName) };
+  }
   const sheetDate = sheetDay ? dateFromCurrentMonthDay(sheetDay) : parseSheetDate(sheetName);
   if (sheetDate) {
     return {
@@ -162,11 +174,7 @@ function extractGfReportDate(rows, sheetName = "") {
     };
   }
 
-  const dateRow = rows.find((row) => /день\s*\d{1,2}/i.test(rowText(row)) && /\d{4}/.test(rowText(row)));
-  const text = dateRow ? rowText(dateRow) : "";
   const day = text.match(/день\s*(\d{1,2})/i)?.[1];
-  const year = text.match(/(20\d{2})/)?.[1];
-  const monthWord = Object.keys(ruMonths).find((month) => new RegExp(month, "i").test(text));
 
   if (!day || !year || !monthWord) {
     return { date: "", rawDate: text || "Дневной отчет GF Fit" };
@@ -212,22 +220,9 @@ function findGfExpenseLineValue(rows, matcher) {
 }
 
 function countGfMemberships(rows) {
-  const start = rows.findIndex((row) => /абонементы\s+на\s+месяц/i.test(rowText(row)));
-  if (start < 0) return 0;
-  const totalRow = rows.findIndex((row, index) => {
-    if (index <= start) return false;
-    const cells = compactCells(row);
-    return /^итого:?$/i.test(cells[0] || "");
-  });
-  const nextSection = rows.findIndex((row, index) => index > start && /разовые\s+тренировки/i.test(rowText(row)));
-  const end = totalRow > start ? totalRow : nextSection;
-  const section = rows.slice(start + 1, end > start ? end : rows.length);
-
-  return section.filter((row) => {
-    const cells = compactCells(row);
-    if (!cells.length || /^итого:?$/i.test(cells[0])) return false;
-    return cells.some((cell, index) => index > 0 && parseNumber(cell) > 0);
-  }).length;
+  // The original daily form lists subscriptions in B6:B25. A name is the
+  // source of truth; a payment can be missing or entered later.
+  return rows.slice(5, 25).filter((row) => cleanText(row[1])).length;
 }
 
 function parseGfDailyReport(rows, sheetName = "") {
@@ -271,6 +266,7 @@ function parseGfDailyReport(rows, sheetName = "") {
         dayNumber,
         sheetName,
         membershipsCount: countGfMemberships(rows),
+        goalSubscriptionsCount: countGfMemberships(rows),
         income,
         expenses,
         totalIncome,
@@ -383,18 +379,24 @@ function parseGfMonthlyReport(rows, sheetName = "") {
 export function normalizeWorkbook(sheets) {
   const warnings = [];
   const monthlySheet = sheets.find((sheet) => /отчет|месяц|финал|итог/i.test(sheet.name));
-  const parsedDailyReports = sheets
+  const datedTabs = sheets.filter((sheet) => /^\d{4}-\d{2}-\d{2}$/.test(sheet.name));
+  const activeMonth = datedTabs.map((sheet) => sheet.name.slice(0, 7)).sort().at(-1);
+  const sourceTabs = activeMonth
+    ? datedTabs.filter((sheet) => sheet.name.startsWith(activeMonth))
+    : sheets;
+  const parsedDailyReports = sourceTabs
     .filter((sheet) => sheet !== monthlySheet)
     .filter((sheet) => {
       const day = dayNumberFromSheetName(sheet.name);
-      return day ? dateFromCurrentMonthDay(day) : parseSheetDate(sheet.name);
+      if (/^День\s*31$/i.test(sheet.name)) return false; // September's blank template.
+      return day ? day >= 1 && day <= 31 : !!parseSheetDate(sheet.name);
     })
     .map((sheet) => parseGfDailyReport(sheet.rows, sheet.name))
     .filter(Boolean);
-  const monthlyReport = monthlySheet ? parseGfMonthlyReport(monthlySheet.rows, monthlySheet.name) : null;
+  const monthlyReport = !activeMonth && monthlySheet ? parseGfMonthlyReport(monthlySheet.rows, monthlySheet.name) : null;
 
   if (!parsedDailyReports.length) warnings.push("Дневные листы не распознаны");
-  if (!monthlyReport) warnings.push("Финальный лист месяца не распознан");
+  if (!monthlyReport && !activeMonth) warnings.push("Финальный лист месяца не распознан");
 
   const countsByDay = new Map();
   const countsByDate = new Map();
@@ -404,11 +406,11 @@ export function normalizeWorkbook(sheets) {
     if (record?.date) countsByDate.set(record.date, record.membershipsCount || 0);
   }
 
-  const records = (monthlyReport?.records || parsedDailyReports.flatMap((report) => report.records)).map((record) => ({
+  const records = (parsedDailyReports.length ? parsedDailyReports.flatMap((report) => report.records) : monthlyReport?.records || []).map((record) => ({
     ...record,
-    membershipsCount: countsByDate.get(record.date) || countsByDay.get(record.dayNumber) || record.membershipsCount || 0,
+    membershipsCount: countsByDate.get(record.date) ?? countsByDay.get(record.dayNumber) ?? record.membershipsCount ?? 0,
   }));
-  const totals = monthlyReport?.totals || null;
+  const totals = parsedDailyReports.length ? null : monthlyReport?.totals || null;
   const reportWarnings = monthlyReport
     ? warnings
     : [...warnings, ...parsedDailyReports.flatMap((report) => report.warnings || [])];

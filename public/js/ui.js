@@ -240,7 +240,7 @@ function renderYearArchive(year, records, sortedMonths) {
 
     return `
       <div class="year-month ${tone}" data-month="${item.month}">
-        ${isCurrent ? "" : `<button type="button" class="month-edit-btn" data-action="edit" aria-label="Изменить ${item.label || item.month}">✎</button>`}
+        ${isCurrent || !onMonthTotalsSave ? "" : `<button type="button" class="month-edit-btn" data-action="edit" aria-label="Изменить ${item.label || item.month}">✎</button>`}
         <span>${monthShortName(index)}</span>
         <strong>${money(item.totals?.netProfit)}</strong>
         <small>${diff === null ? "первый отчет" : `${signedMoney(diff)} к пред.`}</small>
@@ -278,7 +278,7 @@ function renderAnnualArchive(months) {
     .sort((a, b) => a.month.localeCompare(b.month));
 
   if (!sortedMonths.length) {
-    return `<div class="empty">Годовой архив пока пуст. Первый месячный итог сохранится автоматически после загрузки финального отчета.</div>`;
+    return `<div class="empty">Годовой архив пока пуст.</div>`;
   }
 
   const groups = new Map();
@@ -510,7 +510,7 @@ function renderMonthGrid(totals) {
 
 export function renderDashboard(model, meta = {}) {
   const { totals, today, records, incomeRanking, productMargins } = model;
-  document.getElementById("sourceStatus").textContent = model.sourceMode === "demo" ? "Демо" : "Live";
+  document.getElementById("sourceStatus").textContent = model.sourceMode === "demo" ? "Демо" : "Данные";
   document.getElementById("sourceStatus").className = `status ${model.sourceMode === "demo" ? "demo" : "ok"}`;
   document.getElementById("sourceLink").href = SHEET_SOURCE.url;
   document.getElementById("updatedAt").textContent = meta.fetchedAt ? new Date(meta.fetchedAt).toLocaleString("ru-RU") : new Date().toLocaleString("ru-RU");

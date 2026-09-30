@@ -1,0 +1,170 @@
+:root[data-theme="light"] {
+  --accent: #177d60;
+  --accent-2: #a9d879;
+  --blue: #177d60;
+  --app-bg: radial-gradient(circle at 8% 0%, #e4f0e4, transparent 34%), linear-gradient(180deg, #f6f9f5, #e9efea);
+}
+
+:root[data-theme="light"] .hero {
+  background: linear-gradient(135deg, #172c24, #315742);
+}
+
+.subscription-goal {
+  width: min(1180px, calc(100% - 32px));
+  margin: 22px auto 0;
+  padding: clamp(24px, 4vw, 46px);
+  border-radius: 30px;
+  background: radial-gradient(circle at 92% 5%, rgba(191, 232, 128, .23), transparent 31%), linear-gradient(135deg, #112b25, #214b3b);
+  box-shadow: 0 24px 64px rgba(17, 43, 37, .22);
+  color: #f5faf2;
+}
+
+.subscription-goal-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.subscription-goal-kicker {
+  margin: 0 0 7px;
+  color: #bae4a3;
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .11em;
+  text-transform: uppercase;
+}
+
+.subscription-goal h2 {
+  color: inherit;
+  font-size: clamp(24px, 3.4vw, 40px);
+}
+
+.subscription-goal-month {
+  margin: 8px 0 0;
+  color: #c4d7ca;
+  text-transform: capitalize;
+}
+
+.subscription-goal-today {
+  flex: 0 0 auto;
+  padding: 9px 15px;
+  border: 1px solid rgba(201, 240, 153, .28);
+  border-radius: 999px;
+  background: rgba(208, 240, 159, .10);
+  color: #d7f3aa;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.subscription-goal-count {
+  display: flex;
+  align-items: baseline;
+  gap: .08em;
+  margin: 26px 0 17px;
+  font-size: clamp(72px, 13vw, 150px);
+  font-weight: 800;
+  letter-spacing: -.075em;
+  line-height: .85;
+  font-variant-numeric: tabular-nums;
+}
+
+.subscription-goal-count span {
+  color: #b8daa7;
+  font-size: .43em;
+  letter-spacing: -.06em;
+}
+
+.subscription-goal-track {
+  height: 15px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, .17);
+}
+
+.subscription-goal-track i {
+  display: block;
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #a7dc80, #ddf3a5);
+  transition: width .7s ease;
+}
+
+.subscription-goal-remaining {
+  margin: 13px 0 0;
+  color: #c8dacb;
+  font-size: 14px;
+}
+
+@media (max-width: 560px) {
+  .subscription-goal { margin-top: 14px; border-radius: 24px; }
+  .subscription-goal-top { flex-wrap: wrap; }
+  .subscription-goal-count { margin-top: 31px; }
+}
+
+.tb-panel {
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+
+.tb-month-section {
+  border-top: 1px solid var(--border);
+  padding-top: 15px;
+}
+
+.tb-note,
+.tb-month-status {
+  margin: 0 0 10px;
+  color: var(--text-dim);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.tb-month-form {
+  display: grid;
+  gap: 9px;
+}
+
+.tb-month-form label {
+  display: grid;
+  gap: 4px;
+  color: var(--text-strong);
+  font-size: 12px;
+  font-weight: 650;
+}
+
+.tb-month-form input {
+  min-width: 0;
+  width: 100%;
+  padding: 9px 11px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface-2);
+  color: var(--text-strong);
+  color-scheme: inherit;
+}
+
+.tb-month-form button {
+  border: 0;
+  border-radius: 11px;
+  padding: 11px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tb-month-form button:disabled { opacity: .55; cursor: default; }
+.tb-month-status { margin: 9px 0 0; min-height: 1em; }
+.tb-archive-list { display: grid; gap: 6px; }
+.tb-archive-link { display: inline-block; margin: 0 0 10px; color: var(--accent); font-size: 12px; font-weight: 700; text-decoration: none; }
+.tb-archive-link:hover { text-decoration: underline; }
+.tb-archive-item { border: 1px solid var(--border); border-radius: 11px; overflow: hidden; }
+.tb-archive-item summary { display: flex; justify-content: space-between; gap: 10px; padding: 10px; cursor: pointer; color: var(--text-strong); font-size: 12px; }
+.tb-archive-item summary span { color: var(--accent); font-weight: 800; }
+.tb-archive-totals { display: grid; gap: 3px; padding: 0 10px 10px; color: var(--text-dim); font-size: 11px; }
+.tb-archive-scroll { overflow-x: auto; }
+.tb-archive-scroll table { width: 100%; border-collapse: collapse; font-size: 10px; white-space: nowrap; }
+.tb-archive-scroll th, .tb-archive-scroll td { padding: 5px; border-top: 1px solid var(--border); text-align: right; }
+.tb-archive-scroll th:first-child, .tb-archive-scroll td:first-child { text-align: left; }

@@ -3,20 +3,32 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>GF Fit Dashboard</title>
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23111114'/%3E%3Cpath d='M17 32h30M22 23v18M42 23v18M12 28v8M52 28v8' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E" />
+    <title>GF Fit — панель показателей</title>
     <link rel="stylesheet" href="/css/styles.css" />
     <link rel="stylesheet" href="/css/themes.css" />
     <link rel="stylesheet" href="/css/layouts.css" />
     <link rel="stylesheet" href="/css/toolbar.css" />
+    <link rel="stylesheet" href="/css/goal.css" />
   </head>
   <body>
+    <section class="subscription-goal" id="subscriptionGoal" aria-labelledby="subscriptionGoalTitle">
+      <div class="subscription-goal-top">
+        <div>
+          <p class="subscription-goal-kicker">Цель месяца</p>
+          <h2 id="subscriptionGoalTitle">Абонементы</h2>
+          <p id="subscriptionGoalMonth" class="subscription-goal-month">Загрузка данных…</p>
+        </div>
+        <span id="subscriptionGoalToday" class="subscription-goal-today">+0 сегодня</span>
+      </div>
+      <div class="subscription-goal-count"><strong id="subscriptionGoalCount">—</strong><span>/100</span></div>
+      <div class="subscription-goal-track" role="progressbar" aria-label="Прогресс по абонементам" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="subscriptionGoalFill"></i></div>
+      <p id="subscriptionGoalRemaining" class="subscription-goal-remaining">До цели осталось 100</p>
+    </section>
     <main class="shell" id="layoutV1">
       <section class="hero">
         <div>
           <div class="brand-row">
-            <span class="brand-mark">GF</span>
-            <p class="eyebrow">GF Fit dashboard</p>
+            <p class="eyebrow">Панель GF Fit</p>
           </div>
           <h1>GF Fit</h1>
         </div>
@@ -141,7 +153,7 @@
             <div class="panel-head">
               <div>
                 <p class="panel-kicker">Источник</p>
-                <h2>Google Sheet</h2>
+                <h2>Google Таблица</h2>
               </div>
             </div>
             <div class="source-box">

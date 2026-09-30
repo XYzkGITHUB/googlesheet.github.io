@@ -1,5 +1,16 @@
 [build]
   publish = "public"
+  functions = "netlify/functions"
+
+[[redirects]]
+  from = "/api/dashboard"
+  to = "/.netlify/functions/dashboard"
+  status = 200
+
+[[redirects]]
+  from = "/api/months"
+  to = "/.netlify/functions/months"
+  status = 200
 
 [[headers]]
   for = "/*"

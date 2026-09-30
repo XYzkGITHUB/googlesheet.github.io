@@ -65,7 +65,7 @@ function currentMonthKey() {
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 }
 
-function archiveSection(months) {
+function archiveSection(months, canEdit = true) {
   const sorted = [...(months || [])]
     .filter((item) => /^\d{4}-\d{2}$/.test(item.month || ""))
     .sort((a, b) => a.month.localeCompare(b.month));
@@ -88,7 +88,7 @@ function archiveSection(months) {
       const item = byMonth.get(index + 1);
       if (!item) return `<div class="y-cell empty"><span>${MONTHS_SHORT[index]}</span><strong>—</strong></div>`;
       const tone = (item.totals?.netProfit || 0) >= 0 ? "pos" : "neg";
-      const editable = item.month !== currentMonthKey();
+      const editable = canEdit && item.month !== currentMonthKey();
       return `
         <div class="y-cell ${tone}" data-month="${item.month}">
           ${editable ? `<button type="button" class="y-edit" data-action="edit" aria-label="Изменить">${icons.pencil(12)}</button>` : ""}
@@ -128,14 +128,13 @@ export function renderV3(container, model, meta, ctx) {
     <div class="v3">
       <header class="v3-top" data-reveal>
         <div class="v3-brand">
-          <span class="v3-mark">GF</span>
           <div>
             <strong>GF Fit · Полный отчет</strong>
             <small>${model.period?.start || "—"} — ${model.period?.end || "—"} · <span data-clock></span></small>
           </div>
         </div>
         <div class="v3-top-actions">
-          <span class="pill ${isDemo ? "pill-warn" : "pill-live"}"><i class="dot"></i>${isDemo ? "Демо" : "Live"}</span>
+          <span class="pill ${isDemo ? "pill-warn" : "pill-live"}"><i class="dot"></i>${isDemo ? "Демо" : "Данные"}</span>
           <button type="button" class="icon-btn" data-action="refresh" title="Обновить" aria-label="Обновить">${icons.refresh(18)}</button>
         </div>
       </header>
@@ -244,7 +243,7 @@ export function renderV3(container, model, meta, ctx) {
           </ul>
         </article>
         <article class="v3-card" data-reveal>
-          <div class="v3-card-head"><h2>Источник</h2><small>Google Sheet</small></div>
+          <div class="v3-card-head"><h2>Источник</h2><small>Google Таблица</small></div>
           <div class="v3-source">
             <a href="${SHEET_SOURCE.url}" target="_blank" rel="noreferrer">Открыть таблицу ↗</a>
             <div><span>Обновлено</span><strong>${meta.fetchedAt ? new Date(meta.fetchedAt).toLocaleString("ru-RU") : new Date().toLocaleString("ru-RU")}</strong></div>
@@ -255,8 +254,8 @@ export function renderV3(container, model, meta, ctx) {
       </section>
 
       <section class="v3-card" data-reveal>
-        <div class="v3-card-head"><h2>Годовой отчет</h2><small>наведи на месяц и нажми карандаш, чтобы поправить</small></div>
-        <div id="v3Archive">${archiveSection(meta.monthlyArchive)}</div>
+        <div class="v3-card-head"><h2>Годовой отчет</h2><small>${ctx.onEditMonth ? "Наведите на месяц, чтобы изменить итог" : "Сохранённые месяцы"}</small></div>
+        <div id="v3Archive">${archiveSection(meta.monthlyArchive, !!ctx.onEditMonth)}</div>
       </section>
     </div>
   `;
