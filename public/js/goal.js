@@ -21,7 +21,21 @@ export function subscriptionGoalState(model, date = moscowDate()) {
   const today = month === date.slice(0, 7)
     ? days.filter((record) => record.date === date).reduce((sum, record) => sum + count(record), 0)
     : 0;
-  return { month, total, today, remaining: Math.max(0, TARGET - total), progress: Math.min(100, total) };
+  const isCurrentMonth = month === date.slice(0, 7);
+  const [year, monthNumber] = month.split("-").map(Number);
+  const daysInMonth = new Date(year, monthNumber, 0).getDate();
+  const daysLeft = isCurrentMonth ? daysInMonth - Number(date.slice(8, 10)) + 1 : 0;
+  // Only completed days set today's target; future sheet rows do not count.
+  const beforeToday = days.filter((record) => record.date < date).reduce((sum, record) => sum + count(record), 0);
+  const remainingAtStart = Math.max(0, TARGET - beforeToday);
+  const remainingNow = Math.max(0, remainingAtStart - today);
+  const todayTarget = daysLeft > 0 ? Math.ceil(remainingAtStart / daysLeft) : null;
+  const todayShortfall = todayTarget === null ? null : Math.max(0, todayTarget - today);
+  const tomorrowTarget = daysLeft > 1 ? Math.ceil(remainingNow / (daysLeft - 1)) : null;
+  return {
+    month, total, today, remaining: Math.max(0, TARGET - total), progress: Math.min(100, total),
+    isCurrentMonth, daysLeft, todayTarget, todayShortfall, tomorrowTarget,
+  };
 }
 
 export function renderSubscriptionGoal(model) {
@@ -37,5 +51,12 @@ export function renderSubscriptionGoal(model) {
     ? `До цели осталось ${state.remaining}`
     : "Цель выполнена!";
   document.getElementById("subscriptionGoalFill").style.width = `${state.progress}%`;
+  document.getElementById("subscriptionGoalPlan").hidden = !state.isCurrentMonth;
+  document.getElementById("subscriptionGoalTodayTarget").textContent = String(state.todayTarget ?? "—");
+  document.getElementById("subscriptionGoalShortfall").textContent = String(state.todayShortfall ?? "—");
+  document.getElementById("subscriptionGoalTomorrowTarget").textContent = String(state.tomorrowTarget ?? "—");
+  document.getElementById("subscriptionGoalPlanNote").textContent = state.daysLeft === 1
+    ? "Последний день месяца — оставшиеся абонементы нужны сегодня."
+    : `План на завтра — если сегодня больше не будет продаж. Дней до конца месяца, включая сегодня: ${state.daysLeft}.`;
   document.querySelector(".subscription-goal-track").setAttribute("aria-valuenow", String(state.progress));
 }

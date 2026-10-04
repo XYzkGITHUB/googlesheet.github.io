@@ -23,6 +23,14 @@
       <div class="subscription-goal-count"><strong id="subscriptionGoalCount">—</strong><span>/100</span></div>
       <div class="subscription-goal-track" role="progressbar" aria-label="Прогресс по абонементам" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><i id="subscriptionGoalFill"></i></div>
       <p id="subscriptionGoalRemaining" class="subscription-goal-remaining">До цели осталось 100</p>
+      <div id="subscriptionGoalPlan" class="subscription-goal-plan" hidden>
+        <dl class="subscription-goal-plan-grid">
+          <div><dt>Цель на сегодня</dt><dd id="subscriptionGoalTodayTarget">—</dd></div>
+          <div><dt>Не хватает сегодня</dt><dd id="subscriptionGoalShortfall">—</dd></div>
+          <div><dt>Цель на завтра</dt><dd id="subscriptionGoalTomorrowTarget">—</dd></div>
+        </dl>
+        <p id="subscriptionGoalPlanNote" class="subscription-goal-plan-note"></p>
+      </div>
     </section>
     <main class="shell" id="layoutV1">
       <section class="hero">
