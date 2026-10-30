@@ -76,6 +76,11 @@ test("expiry today is active and inclusive 3/7-day windows use real dates", () =
   assert.equal(result.expiringWeek, 5);
   assert.equal(result.total, 8);
   assert.equal(result.unknownDates, 0);
+  assert.equal(result.futureStarts, 1);
+  assert.equal(result.expiryByDate.length, 30);
+  assert.equal(result.expiryByDate[0].count, result.expiresToday);
+  assert.equal(result.expiryByDate.slice(0, 3).reduce((sum, bin) => sum + bin.count, 0), result.expiringSoon);
+  assert.equal(result.expiryByDate.slice(0, 7).reduce((sum, bin) => sum + bin.count, 0), result.expiringWeek);
 });
 
 test("stale or disagreeing sheet snapshots retain source counts and withhold extra counts", () => {
@@ -84,10 +89,14 @@ test("stale or disagreeing sheet snapshots retain source counts and withhold ext
   assert.equal(stale.detailsReason, "stale");
   assert.equal(stale.expiringSoon, 5);
   assert.equal(stale.active, null);
+  assert.equal(stale.expiryByDate, null);
+  assert.equal(stale.futureStarts, null);
   const mismatch = buildSubscriptionHealth(summaryRows(), [VIEW_HEADER, membership("30.10.2026")], NOW);
   assert.equal(mismatch.detailsReason, "mismatch");
   assert.equal(mismatch.expiringSoon, 5);
   assert.equal(mismatch.expiresToday, null);
+  assert.equal(mismatch.expiryByDate, null);
+  assert.equal(mismatch.futureStarts, null);
 });
 
 test("missing views and invalid member dates cannot become believable totals", () => {
@@ -96,7 +105,11 @@ test("missing views and invalid member dates cannot become believable totals", (
   assert.equal(invalid.detailsReason, "invalid_dates");
   assert.equal(invalid.unknownDates, 1);
   assert.equal(invalid.total, null);
+  assert.equal(invalid.expiryByDate, null);
+  assert.equal(invalid.futureStarts, null);
+  assert.equal(buildSubscriptionHealth(summaryRows(), [], NOW).expiryByDate, null);
   assert.equal(buildSubscriptionHealth([], [VIEW_HEADER], NOW).detailsReason, "summary_unavailable");
+  assert.equal(buildSubscriptionHealth([], [VIEW_HEADER], NOW).expiryByDate, null);
 });
 
 test("an empty valid view can represent a genuine zero watchlist", () => {
@@ -104,6 +117,9 @@ test("an empty valid view can represent a genuine zero watchlist", () => {
   assert.equal(result.detailsAvailable, true);
   assert.equal(result.total, 0);
   assert.equal(result.active, 0);
+  assert.equal(result.futureStarts, 0);
+  assert.equal(result.expiryByDate.length, 30);
+  assert.equal(result.expiryByDate.every((bin) => bin.count === 0), true);
 });
 
 test("outputs contain aggregate fields only and ignore the source status/day formulas", () => {
@@ -112,5 +128,58 @@ test("outputs contain aggregate fields only and ignore the source status/day for
   assert.equal(result.detailsAvailable, true);
   assert.equal(result.active, 1);
   assert.equal(JSON.stringify(result).includes("PRIVATE_FIXTURE_VALUE"), false);
-  assert.equal(Object.values(result).some(Array.isArray), false);
+  assert.deepEqual(Object.keys(result).filter((key) => Array.isArray(result[key])), ["expiryByDate"]);
+  assert.equal(result.expiryByDate.every((bin) => Object.keys(bin).sort().join(",") === "count,date"), true);
+});
+
+test("30-day histogram includes its last day and excludes future starts, expired and later expiries", () => {
+  const rows = [VIEW_HEADER,
+    membership("29.10.2026"),
+    membership("30.10.2026"),
+    membership("30.10.2026"),
+    membership("28.11.2026"),
+    membership("29.11.2026"),
+    membership("01.11.2026", "31.10.2026"),
+  ];
+  const result = buildSubscriptionHealth(summaryRows({ expired: 1, expiringSoon: 2, listed: 3 }), rows, NOW);
+  assert.equal(result.detailsAvailable, true);
+  assert.equal(result.futureStarts, 1);
+  assert.equal(result.expiryByDate[0].date, "2026-10-30");
+  assert.equal(result.expiryByDate[0].count, 2);
+  assert.equal(result.expiryByDate[29].date, "2026-11-28");
+  assert.equal(result.expiryByDate[29].count, 1);
+  assert.equal(result.expiryByDate.reduce((sum, bin) => sum + bin.count, 0), 3);
+  assert.equal(result.active, 4);
+  assert.equal(result.total, 6);
+});
+
+test("histogram crosses the year using Moscow today, including the final inclusive 7-day date", () => {
+  const result = buildSubscriptionHealth(summaryRows({ date: "31.12.2026", expiringSoon: 1, listed: 1 }), [VIEW_HEADER,
+    membership("31.12.2026", "01.12.2026"),
+    membership("06.01.2027", "01.12.2026"),
+    membership("29.01.2027", "01.12.2026"),
+  ], new Date("2026-12-30T21:00:00Z"));
+  assert.equal(result.detailsAvailable, true);
+  assert.equal(result.expiryByDate[0].date, "2026-12-31");
+  assert.equal(result.expiryByDate[1].date, "2027-01-01");
+  assert.equal(result.expiryByDate[6].date, "2027-01-06");
+  assert.equal(result.expiryByDate[6].count, 1);
+  assert.equal(result.expiryByDate[29].date, "2027-01-29");
+  assert.equal(result.expiryByDate[29].count, 1);
+  assert.equal(result.expiringWeek, 2);
+});
+
+test("histogram keeps February 29 as a real day without shifting March buckets", () => {
+  const result = buildSubscriptionHealth(summaryRows({ date: "28.02.2028", expiringSoon: 3, listed: 3 }), [VIEW_HEADER,
+    membership("28.02.2028", "01.02.2028"),
+    membership("29.02.2028", "01.02.2028"),
+    membership("01.03.2028", "01.02.2028"),
+  ], new Date("2028-02-28T12:00:00Z"));
+  assert.equal(result.detailsAvailable, true);
+  assert.deepEqual(result.expiryByDate.slice(0, 3), [
+    { date: "2028-02-28", count: 1 },
+    { date: "2028-02-29", count: 1 },
+    { date: "2028-03-01", count: 1 },
+  ]);
+  assert.equal(result.expiryByDate[29].date, "2028-03-28");
 });

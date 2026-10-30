@@ -3,7 +3,24 @@ import { parseCsv } from "./csv.js";
 import { buildSubscriptionHealth, moscowDate, parseCalendarDate } from "./subscriptions.js";
 
 const CACHE_KEY = "gf-fit-subscription-health-v1";
-const COUNTS = ["expired", "expiringSoon", "listed", "active", "expiresToday", "expiringWeek", "total", "unknownDates"];
+const COUNTS = ["expired", "expiringSoon", "listed", "active", "expiresToday", "expiringWeek", "total", "unknownDates", "futureStarts"];
+let expiryWindow = 7;
+let selectedExpiryDate = "";
+let calendarHealth = null;
+let calendarBound = false;
+
+function safeExpiryBuckets(health) {
+  if (!health.detailsAvailable || !Array.isArray(health.expiryByDate) || health.expiryByDate.length !== 30) return null;
+  const start = new Date(`${health.calculatedOn}T00:00:00Z`).getTime();
+  const days = [];
+  for (const [index, bucket] of health.expiryByDate.entries()) {
+    const expected = new Date(start + index * 86400000).toISOString().slice(0, 10);
+    if (bucket?.date !== expected || !Number.isSafeInteger(bucket.count) || bucket.count < 0) return null;
+    days.push({ date: expected, count: bucket.count });
+  }
+  const sum = (length) => days.slice(0, length).reduce((total, day) => total + day.count, 0);
+  return days[0].count === health.expiresToday && sum(3) === health.expiringSoon && sum(7) === health.expiringWeek && sum(30) <= health.active ? days : null;
+}
 
 // Only aggregate counts and their calculation date ever enter browser storage.
 function safeSnapshot(health) {
@@ -16,6 +33,7 @@ function safeSnapshot(health) {
   result.detailsAvailable &&= ["active", "expiresToday", "expiringWeek", "total"].every((key) => result[key] !== null)
     && result.expiresToday <= result.expiringSoon && result.expiringSoon <= result.expiringWeek
     && result.expiringWeek <= result.active && result.active + result.expired <= result.total;
+  result.expiryByDate = safeExpiryBuckets({ ...result, expiryByDate: health.expiryByDate });
   return result;
 }
 
@@ -58,7 +76,67 @@ function displayDate(iso) {
   return iso.split("-").reverse().join(".");
 }
 
+function renderExpiryCalendar(health) {
+  calendarHealth = health;
+  const calendar = document.getElementById("expiryCalendar");
+  const buckets = health?.available && health.calculatedOn === moscowDate() ? safeExpiryBuckets(health) : null;
+  calendar.hidden = !buckets;
+  const shortcut = document.getElementById("expiryShortcut");
+  shortcut.disabled = !buckets;
+  shortcut.textContent = buckets ? `Окончания за 7 дней: ${NUMBER_FORMAT.format(health.expiringWeek)}` : "Календарь пока недоступен";
+  shortcut.onclick = () => {
+    document.getElementById("subscriptionHealth").open = true;
+    expiryWindow = 7;
+    renderExpiryCalendar(calendarHealth);
+    calendar.scrollIntoView({ block: "center", behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+  };
+  if (!buckets) return;
+  if (!calendarBound) {
+    calendar.addEventListener("click", (event) => {
+      const windowButton = event.target.closest("[data-expiry-window]");
+      const dayButton = event.target.closest("[data-expiry-date]");
+      if (windowButton) expiryWindow = Number(windowButton.dataset.expiryWindow);
+      else if (dayButton) selectedExpiryDate = dayButton.dataset.expiryDate;
+      else return;
+      renderExpiryCalendar(calendarHealth);
+      if (dayButton) calendar.querySelector(`[data-expiry-date="${selectedExpiryDate}"]`)?.focus({ preventScroll: true });
+    });
+    calendarBound = true;
+  }
+  const days = buckets.slice(0, expiryWindow);
+  const max = Math.max(0, ...days.map((day) => day.count));
+  if (!days.some((day) => day.date === selectedExpiryDate)) selectedExpiryDate = (days.find((day) => day.count > 0) || days[0]).date;
+  const total = days.reduce((sum, day) => sum + day.count, 0);
+  document.getElementById("expiryCalendarRange").textContent = `${displayDate(days[0].date)}–${displayDate(days.at(-1).date)} · Окончаний: ${NUMBER_FORMAT.format(total)}`;
+  for (const button of calendar.querySelectorAll("[data-expiry-window]")) button.setAttribute("aria-pressed", String(Number(button.dataset.expiryWindow) === expiryWindow));
+  const fragment = document.createDocumentFragment();
+  for (const day of days) {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `expiry-day${day.date === health.calculatedOn ? " expiry-today" : ""}`;
+    button.dataset.expiryDate = day.date;
+    button.dataset.positive = String(day.count > 0);
+    button.setAttribute("aria-pressed", String(day.date === selectedExpiryDate));
+    button.setAttribute("aria-label", `${displayDate(day.date)} · Абонементов со сроком до этой даты: ${day.count}`);
+    const label = document.createElement("span");
+    label.className = "expiry-day-label";
+    label.textContent = `${day.date.slice(8)}.${day.date.slice(5, 7)}`;
+    const count = document.createElement("strong");
+    count.className = "count";
+    count.textContent = NUMBER_FORMAT.format(day.count);
+    const bar = document.createElement("i");
+    bar.setAttribute("aria-hidden", "true");
+    bar.style.setProperty("--fill", `${max ? day.count / max * 100 : 0}%`);
+    button.append(label, count, bar);
+    fragment.appendChild(button);
+  }
+  document.getElementById("expiryDays").replaceChildren(fragment);
+  const selected = days.find((day) => day.date === selectedExpiryDate);
+  document.getElementById("expirySelection").textContent = `${displayDate(selected.date)} · Окончаний абонементов: ${NUMBER_FORMAT.format(selected.count)}.${health.futureStarts > 0 ? ` Ещё ${NUMBER_FORMAT.format(health.futureStarts)} абонементов начнут действовать позже.` : ""}`;
+}
+
 export function renderSubscriptionHealth(health, { loading = false, failed = false } = {}) {
+  renderExpiryCalendar(health);
   const grid = document.getElementById("subscriptionHealthGrid");
   const summary = document.getElementById("subscriptionHealthSummary");
   const note = document.getElementById("subscriptionHealthNote");

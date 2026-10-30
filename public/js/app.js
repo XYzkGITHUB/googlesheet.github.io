@@ -12,6 +12,7 @@ import { mountToolbar, refreshToolbar } from "./toolbar.js";
 import { renderSubscriptionGoal } from "./goal.js";
 import { loadBridgeDashboard, bridgeDashboardModel, createNextMonth, archiveToMonthlyHistory } from "./bridge.js";
 import { loadSubscriptionHealth, readSubscriptionHealthCache, renderSubscriptionHealth } from "./subscriptionHealth.js";
+import { renderPeriodExplorer, showPeriodReportError } from "./periodExplorer.js";
 
 const CACHE_KEY = "gf-fit-dashboard-cache-v3";
 
@@ -103,6 +104,7 @@ function paint(model, meta) {
   }
 
   refreshToolbar();
+  renderPeriodExplorer(model, meta, layout);
   setRefreshing(refreshing);
 }
 
@@ -189,6 +191,7 @@ function refreshDashboard() {
   refreshPromise = Promise.allSettled([loadDashboard(), refreshSubscriptionHealth()])
     .then(([dashboard]) => {
       if (dashboard.status === "rejected") {
+        showPeriodReportError();
         feedback.textContent = current.model
           ? "Не удалось обновить отчёт. Показаны последние сохранённые показатели. Нажмите «Новые результаты», чтобы повторить."
           : "Не удалось загрузить отчёт. Нажмите «Новые результаты», чтобы повторить.";

@@ -10,6 +10,7 @@
     <link rel="stylesheet" href="/css/toolbar.css" />
     <link rel="stylesheet" href="/css/goal.css" />
     <link rel="stylesheet" href="/css/polish.css" />
+    <link rel="stylesheet" href="/css/features.css" />
   </head>
   <body>
     <section class="subscription-goal" id="subscriptionGoal" aria-labelledby="subscriptionGoalTitle">
@@ -42,8 +43,20 @@
           <div><dt>Действуют сейчас</dt><dd id="subscriptionsActive">—</dd></div>
           <div><dt>Всего в реестре</dt><dd id="subscriptionsTotal">—</dd></div>
         </dl>
+        <div id="expiryCalendar" class="expiry-calendar" hidden>
+          <div class="feature-heading"><h3>Календарь окончаний</h3><p id="expiryCalendarRange"></p></div>
+          <div class="feature-segments" role="group" aria-label="Период календаря абонементов">
+            <button type="button" data-expiry-window="7" aria-pressed="true">7 дней</button>
+            <button type="button" data-expiry-window="14" aria-pressed="false">14 дней</button>
+            <button type="button" data-expiry-window="30" aria-pressed="false">30 дней</button>
+          </div>
+          <div id="expiryDays" class="expiry-days" role="group" aria-label="Число абонементов по дате окончания"></div>
+          <p id="expirySelection" class="expiry-selection" role="status" aria-live="polite"></p>
+          <p class="feature-footnote">Нажмите дату, чтобы увидеть общее число окончаний в этот день.</p>
+        </div>
         <p id="subscriptionHealthNote" class="subscription-health-note" role="status" aria-live="polite">Загружаем только общие показатели из таблицы.</p>
       </details>
+      <div class="goal-quick-actions"><button type="button" id="expiryShortcut" class="feature-link" aria-controls="subscriptionHealth" disabled>Календарь: загрузка…</button><a class="feature-link" href="#periodReport">Открыть отчёт за период <span aria-hidden="true">↓</span></a></div>
       <p id="dashboardRefreshFeedback" class="subscription-health-note" role="status" aria-live="polite" hidden></p>
     </section>
     <main class="shell" id="layoutV1">
@@ -203,6 +216,10 @@
 
     <div id="layoutV2" hidden></div>
     <div id="layoutV3" hidden></div>
+
+    <section id="periodReport" class="period-report" data-layout="v1" aria-labelledby="periodReportTitle" tabindex="-1">
+      <div class="panel report-panel"><h2 id="periodReportTitle">Отчёт за период</h2><p class="report-feedback" role="status">Загрузка показателей…</p></div>
+    </section>
 
     <script type="module" src="/js/app.js"></script>
   </body>

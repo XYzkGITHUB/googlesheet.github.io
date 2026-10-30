@@ -42,7 +42,9 @@ test("network reads are limited to anonymous ranges; only aggregates enter stora
   const cached = readSubscriptionHealthCache();
   assert.equal(cached.expired, 0);
   assert.equal(cached.total, 0);
-  assert.equal(Object.entries(cached).every(([key, value]) => key === "calculatedOn" || typeof value === "boolean" || typeof value === "number" || value === null), true);
+  assert.equal(Object.entries(cached).every(([key, value]) => key === "calculatedOn" || key === "expiryByDate" || typeof value === "boolean" || typeof value === "number" || value === null), true);
+  assert.equal(cached.expiryByDate.length, 30);
+  assert.equal(cached.expiryByDate.every((day) => Object.keys(day).join(",") === "date,count" && day.count === 0), true);
 });
 
 test("failure of optional view keeps valid source summary without inventing details", async () => {
@@ -81,5 +83,24 @@ test("cached data validates dates, count consistency and an explicit field allow
   for (const invalid of [{ calculatedOn: "2026-02-31" }, { expired: -1 }, { listed: 82 }, { expiringSoon: "5" }]) {
     storage.set(CACHE_KEY, JSON.stringify({ ...valid, ...invalid }));
     assert.equal(readSubscriptionHealthCache(), null);
+  }
+});
+
+test("expiry cache stores only reconciled calendar buckets and strips source properties", () => {
+  const calculatedOn = "2026-10-30";
+  const expiryByDate = Array.from({ length: 30 }, (_, index) => ({
+    date: new Date(Date.UTC(2026, 9, 30 + index)).toISOString().slice(0, 10), count: index === 1 ? 5 : 0,
+    rawSource: "PRIVATE_FIXTURE_VALUE",
+  }));
+  const valid = { available: true, detailsAvailable: true, calculatedOn, expired: 0, expiringSoon: 5, listed: 5,
+    active: 8, expiresToday: 0, expiringWeek: 5, total: 8, unknownDates: 0, futureStarts: 0, expiryByDate };
+  storage.set(CACHE_KEY, JSON.stringify(valid));
+  const cache = readSubscriptionHealthCache();
+  assert.equal(cache.expiryByDate.length, 30);
+  assert.equal(JSON.stringify(cache).includes("PRIVATE_FIXTURE_VALUE"), false);
+  for (const invalid of [expiryByDate.slice(1), expiryByDate.map((day, index) => index === 1 ? { ...day, count: 6 } : day),
+    expiryByDate.map((day, index) => index === 1 ? { ...day, date: calculatedOn } : day)]) {
+    storage.set(CACHE_KEY, JSON.stringify({ ...valid, expiryByDate: invalid }));
+    assert.equal(readSubscriptionHealthCache().expiryByDate, null);
   }
 });

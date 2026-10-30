@@ -97,6 +97,8 @@ export function buildSubscriptionHealth(summaryRows, membershipRows, now = new D
     expiringWeek: null,
     total: null,
     unknownDates: null,
+    expiryByDate: null,
+    futureStarts: null,
   };
   if (!summary.available) return { ...result, detailsReason: "summary_unavailable" };
   const today = moscowDate(now);
@@ -114,7 +116,12 @@ export function buildSubscriptionHealth(summaryRows, membershipRows, now = new D
   let expiringWeek = 0;
   let total = 0;
   let unknownDates = 0;
+  let futureStarts = 0;
   const todayDay = calendarDay(today);
+  const expiryByDate = Array.from({ length: 30 }, (_, index) => ({
+    date: new Date((todayDay + index) * 86400000).toISOString().slice(0, 10),
+    count: 0,
+  }));
   for (const row of membershipRows.slice(headerIndex + 1)) {
     if (!Array.isArray(row) || ![0, 3, 4, 5].some((index) => text(row[index]))) continue;
     total += 1;
@@ -125,16 +132,21 @@ export function buildSubscriptionHealth(summaryRows, membershipRows, now = new D
       continue;
     }
     if (end < today) expired += 1;
-    if (start > today || end < today) continue;
+    if (start > today) {
+      futureStarts += 1;
+      continue;
+    }
+    if (end < today) continue;
     active += 1;
     const daysLeft = calendarDay(end) - todayDay + 1;
     if (daysLeft === 1) expiresToday += 1;
     if (daysLeft <= 3) expiringSoon += 1;
     if (daysLeft <= 7) expiringWeek += 1;
+    if (daysLeft <= expiryByDate.length) expiryByDate[daysLeft - 1].count += 1;
   }
   if (unknownDates) return { ...result, unknownDates, detailsReason: "invalid_dates" };
   if (expired !== summary.expired || expiringSoon !== summary.expiringSoon) {
     return { ...result, unknownDates: 0, detailsReason: "mismatch" };
   }
-  return { ...result, detailsAvailable: true, active, expiresToday, expiringWeek, total, unknownDates: 0 };
+  return { ...result, detailsAvailable: true, active, expiresToday, expiringWeek, total, unknownDates: 0, expiryByDate, futureStarts };
 }
