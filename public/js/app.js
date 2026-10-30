@@ -4,10 +4,9 @@ import { SAMPLE_ROWS } from "./sampleData.js";
 import { normalizeRows, normalizeWorkbook } from "./normalizer.js";
 import { buildDashboardModel } from "./analytics.js";
 import { renderDashboard, renderFatalError, startWorkdayTicker, updateMonthlyArchive, appendWarning } from "./ui.js";
-import { applyTheme, readPrefs, watchSystemTheme } from "./prefs.js";
+import { applyTheme, readPrefs } from "./prefs.js";
 import { clearTickers } from "./anim.js";
-import { renderV2 } from "./layoutV2.js";
-import { renderV3, updateV3Archive } from "./layoutV3.js";
+import { renderV2, renderV2Loading, updateV2Archive } from "./layoutV2.js";
 import { mountToolbar, refreshToolbar } from "./toolbar.js";
 import { renderSubscriptionGoal } from "./goal.js";
 import { loadBridgeDashboard, bridgeDashboardModel, createNextMonth, archiveToMonthlyHistory } from "./bridge.js";
@@ -40,6 +39,44 @@ let current = { model: null, meta: null };
 let subscriptionHealth = readSubscriptionHealthCache();
 let refreshPromise = null;
 let refreshing = false;
+
+// The goal, subscription calendar and report keep one set of IDs and handlers.
+// Restore their original positions before replacing a layout's HTML.
+const sharedPanels = ["subscriptionGoal", "periodReport"].map((id) => {
+  const node = document.getElementById(id);
+  const anchor = document.createComment(`${id} original position`);
+  node.before(anchor);
+  return { id, node, anchor };
+});
+
+function restoreSharedPanels() {
+  for (const { node, anchor } of sharedPanels) anchor.after(node);
+}
+
+function placeSharedPanels(layout) {
+  if (layout !== "v2") return;
+  for (const { id, node } of sharedPanels) {
+    const slot = document.getElementById(id === "subscriptionGoal" ? "v2GoalSlot" : "v2ReportSlot");
+    if (slot) slot.appendChild(node);
+  }
+}
+
+function showLayout(layout) {
+  document.documentElement.dataset.layout = layout;
+  for (const id of ["v1", "v2"]) document.getElementById(`layout${id.toUpperCase()}`).hidden = id !== layout;
+}
+
+function renderLoadingLayout() {
+  restoreSharedPanels();
+  const { layout } = readPrefs();
+  showLayout(layout);
+  if (layout === "v2") {
+    renderV2Loading(document.getElementById("layoutV2"));
+    if (!current.model) document.getElementById("subscriptionGoalToday").textContent = "Сегодня: —";
+  }
+  placeSharedPanels(layout);
+  setRefreshing(refreshing);
+}
 
 function setRefreshing(value) {
   refreshing = value;
@@ -80,28 +117,29 @@ async function syncMonthlyArchive(model) {
 }
 
 function paint(model, meta) {
+  restoreSharedPanels();
   current = { model, meta };
   renderSubscriptionGoal(model);
   const { layout } = readPrefs();
   const hosts = {
     v1: document.getElementById("layoutV1"),
     v2: document.getElementById("layoutV2"),
-    v3: document.getElementById("layoutV3"),
   };
 
   clearTickers();
-  for (const [id, host] of Object.entries(hosts)) host.hidden = id !== layout;
+  showLayout(layout);
 
   const archiveEditor = meta.archiveReadOnly ? null : editMonthHandler;
   const ctx = { onEditMonth: archiveEditor };
   const fullMeta = { ...meta, onEditMonth: archiveEditor };
 
   if (layout === "v2") renderV2(hosts.v2, model, fullMeta, ctx);
-  else if (layout === "v3") renderV3(hosts.v3, model, fullMeta, ctx);
   else {
     renderDashboard(model, fullMeta);
     startWorkdayTicker();
   }
+
+  placeSharedPanels(layout);
 
   refreshToolbar();
   renderPeriodExplorer(model, meta, layout);
@@ -110,6 +148,7 @@ function paint(model, meta) {
 
 function repaint() {
   if (current.model) paint(current.model, current.meta);
+  else renderLoadingLayout();
 }
 
 // Renders immediately from whatever archive data we already have, then syncs
@@ -127,7 +166,7 @@ function renderThenSyncArchive(model, meta, cachedMonthlyArchive) {
       // would restart every entrance animation a second after load.
       const layout = readPrefs().layout;
       if (layout === "v1") updateMonthlyArchive(months, editMonthHandler);
-      else if (layout === "v3") updateV3Archive(months);
+      else updateV2Archive(document.getElementById("layoutV2"), months, current.meta.archiveReadOnly ? null : editMonthHandler);
       writeCache({ model, monthlyArchive: months, meta });
     })
     .catch((error) => {
@@ -192,9 +231,21 @@ function refreshDashboard() {
     .then(([dashboard]) => {
       if (dashboard.status === "rejected") {
         showPeriodReportError();
+        if (!current.model && readPrefs().layout === "v2") {
+          const daily = document.getElementById("v2Daily");
+          if (daily) {
+            daily.setAttribute("aria-busy", "false");
+            daily.innerHTML = '<div class="v2r-section-heading"><h2>По дням</h2></div><p class="v2r-empty" role="status">Не удалось загрузить дневные данные. Нажмите «Обновить данные», чтобы повторить.</p>';
+          }
+          document.getElementById("subscriptionGoalMonth").textContent = "Данные не загружены";
+          document.getElementById("subscriptionGoalRemaining").textContent = "Цель — 100 абонементов за месяц.";
+          const subtitle = document.querySelector(".v2r-banner > div > span");
+          if (subtitle) subtitle.textContent = "Данные не загружены";
+        }
+        const refreshLabel = readPrefs().layout === "v2" ? "Обновить данные" : "Новые результаты";
         feedback.textContent = current.model
-          ? "Не удалось обновить отчёт. Показаны последние сохранённые показатели. Нажмите «Новые результаты», чтобы повторить."
-          : "Не удалось загрузить отчёт. Нажмите «Новые результаты», чтобы повторить.";
+          ? `Не удалось обновить отчёт. Показаны последние сохранённые показатели. Нажмите «${refreshLabel}», чтобы повторить.`
+          : `Не удалось загрузить отчёт. Нажмите «${refreshLabel}», чтобы повторить.`;
         feedback.hidden = false;
       }
     })
@@ -206,7 +257,6 @@ function refreshDashboard() {
 }
 
 applyTheme(readPrefs().theme);
-watchSystemTheme(() => applyTheme(readPrefs().theme));
 mountToolbar(repaint, {
   getMonthData: () => ({
     period: current.model?.activePeriod || current.model?.dailyRecords?.[0]?.date?.slice(0, 7) || "",
@@ -224,4 +274,5 @@ document.addEventListener("click", (event) => {
   if (event.target.closest('[data-action="refresh"]')) refreshDashboard();
 });
 
+renderLoadingLayout();
 refreshDashboard();

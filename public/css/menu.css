@@ -1,0 +1,255 @@
+/* Settings are a neutral surface in either layout. Rules stay inside the menu. */
+#toolbarHost {
+  --menu-bg: #fff;
+  --menu-raised: #f5f5f5;
+  --menu-active: #ededed;
+  --menu-ink: #171717;
+  --menu-muted: #626262;
+  --menu-line: #d9d9d9;
+}
+
+:root[data-theme="dark"] #toolbarHost {
+  --menu-bg: #111;
+  --menu-raised: #1a1a1a;
+  --menu-active: #292929;
+  --menu-ink: #f5f5f5;
+  --menu-muted: #b4b4b4;
+  --menu-line: #454545;
+}
+
+#toolbarHost .tb-panel {
+  width: min(360px, calc(100vw - 32px));
+  max-height: calc(100dvh - 100px);
+  padding: 18px;
+  gap: 20px;
+  border: 1px solid var(--menu-line);
+  border-radius: 18px;
+  background: var(--menu-bg);
+  color: var(--menu-ink);
+  box-shadow: none;
+  backdrop-filter: none;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+#toolbarHost .tb-menu-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+#toolbarHost .tb-menu-heading h2 {
+  margin: 0;
+  color: var(--menu-ink);
+  font-size: 18px;
+  font-weight: 650;
+  line-height: 1.3;
+}
+
+#toolbarHost .tb-menu-close {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 1px solid var(--menu-line);
+  border-radius: 8px;
+  background: var(--menu-bg);
+  color: var(--menu-muted);
+  font: inherit;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+#toolbarHost .tb-title {
+  margin: 0 0 10px;
+  color: var(--menu-muted);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+#toolbarHost .tb-layouts,
+#toolbarHost .tb-themes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+#toolbarHost .tb-layout {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto;
+  align-content: start;
+  align-items: start;
+  gap: 8px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid var(--menu-line);
+  border-radius: 10px;
+  background: var(--menu-bg);
+  color: var(--menu-ink);
+  transform: none;
+}
+
+#toolbarHost .tb-layout strong {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--menu-ink);
+  font-size: 14px;
+  line-height: 1.3;
+}
+
+#toolbarHost .tb-layout small {
+  grid-column: auto;
+  color: var(--menu-muted);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+#toolbarHost .tb-preview {
+  grid-row: auto;
+  width: 100%;
+  height: 52px;
+  padding: 7px;
+  gap: 3px;
+  border-radius: 5px;
+  background: var(--menu-raised);
+}
+
+#toolbarHost .tb-preview .pv,
+#toolbarHost .tb-layout.active .tb-preview .pv {
+  background: var(--menu-muted);
+  opacity: .5;
+}
+
+#toolbarHost .tb-layout[aria-pressed="true"],
+#toolbarHost .tb-theme[aria-pressed="true"] {
+  border-color: var(--menu-ink);
+  background: var(--menu-active);
+}
+
+#toolbarHost .tb-theme {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 9px;
+  min-height: 46px;
+  padding: 11px;
+  border: 1px solid var(--menu-line);
+  border-radius: 10px;
+  background: var(--menu-bg);
+  color: var(--menu-ink);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+#toolbarHost .tb-theme i {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  border: 1px solid var(--menu-line);
+  border-radius: 50%;
+  transform: none;
+}
+
+#toolbarHost .tb-choice-check {
+  flex: 0 0 16px;
+  margin-left: auto;
+  color: var(--menu-ink);
+  font-size: 14px;
+  font-weight: 650;
+  line-height: 1;
+  text-align: right;
+}
+
+#toolbarHost .tb-layout:hover,
+#toolbarHost .tb-theme:hover,
+#toolbarHost .tb-menu-close:hover {
+  border-color: var(--menu-ink);
+  transform: none;
+}
+
+#toolbarHost :where(button, a, input, summary):focus-visible {
+  outline: 2px solid var(--menu-ink);
+  outline-offset: 3px;
+}
+
+#toolbarHost .tb-advanced {
+  min-width: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--menu-line);
+}
+
+#toolbarHost .tb-advanced > summary {
+  min-height: 44px;
+  padding: 13px 0;
+  color: var(--menu-muted);
+  font-size: 13px;
+  line-height: 1.4;
+  cursor: pointer;
+}
+
+#toolbarHost .tb-advanced-content {
+  display: grid;
+  gap: 20px;
+  padding-top: 6px;
+}
+
+#toolbarHost .tb-month-section {
+  padding-top: 0;
+  border-top: 0;
+}
+
+#toolbarHost :where(.tb-note, .tb-month-status, .tb-archive-totals) {
+  color: var(--menu-muted);
+}
+
+#toolbarHost .tb-month-form label,
+#toolbarHost .tb-archive-item summary {
+  color: var(--menu-ink);
+}
+
+#toolbarHost .tb-month-form input {
+  border-color: var(--menu-line);
+  background: var(--menu-raised);
+  color: var(--menu-ink);
+}
+
+#toolbarHost .tb-month-form button {
+  background: var(--menu-ink);
+  color: var(--menu-bg);
+}
+
+#toolbarHost .tb-archive-item {
+  border-color: var(--menu-line);
+}
+
+#toolbarHost .tb-archive-item summary span,
+#toolbarHost .tb-archive-link {
+  color: var(--menu-ink);
+}
+
+#toolbarHost .tb-archive-scroll :where(th, td) {
+  border-color: var(--menu-line);
+}
+
+#toolbarHost .tb-fab {
+  border: 1px solid var(--menu-line);
+  background: var(--menu-ink);
+  color: var(--menu-bg);
+  box-shadow: none;
+  transform: none;
+}
+
+#toolbarHost .tb-burger i {
+  background: currentColor;
+}
+
+@media (max-width: 560px) {
+  #toolbarHost { right: 12px; bottom: 12px; }
+  #toolbarHost .tb-panel { padding: 16px; }
+}

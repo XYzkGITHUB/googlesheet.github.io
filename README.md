@@ -2,9 +2,41 @@
 
 Одностраничный dashboard для мониторинга статистики спортзала.
 
+## Два вида панели
+
+Меню содержит только два макета и два варианта оформления:
+
+- **V1** — прежний вид панели с сохранёнными секциями и стилями.
+- **V2** — новый чёрно-белый дизайн тех же показателей: компактная цель,
+  навигация по секциям, выбор дня, месячные итоги, категории, товары,
+  календарь сроков, отчёты за период и годовой архив.
+- **Белая / Чёрная** — единственные варианты оформления. Мята, Океан,
+  Авто и V3 больше не предлагаются. Старые настройки автоматически
+  переводятся в доступные варианты; V1 остаётся видом по умолчанию.
+
+В V2 используются те же данные, фильтры, CSV и календарь, без копий
+персональных записей. Переключение вида сохраняет раскрытые блоки
+календаря и выбранный период. Дополнительные операции с архивом
+и созданием месяцев находятся в пункте меню «Дополнительно».
+
+Декоративный фон V2: `public/images/gym-atmosphere-v2.png`.
+Он создан встроенным инструментом генерации изображений и не является
+фотографией реального интерьера клуба. Направление генерации: пустой
+монохромный силовой зал, тёмная бетонная стена слева, стальные тренажёры
+и свет из окна справа; без людей, текста и логотипов.
+
+<details>
+<summary>Точный запрос генерации фона V2</summary>
+
+Built-in `image_gen`, `transparent_background: false`:
+
+> Create a premium photographic background image for a fitness-club owner dashboard. A cinematic black-and-white architectural photograph of an EMPTY quiet strength-training studio. Wide landscape composition, ideally 2048 x 1152 pixels. Industrial black steel squat rack and cable equipment concentrated on the RIGHT half, tactile brushed metal and rubber flooring, soft directional daylight from a tall window at far right, atmospheric charcoal shadows, rich but controlled contrast, very subtle fine photographic grain. The LEFT half must be mostly clean dark negative space—a shadowed quiet concrete gym wall—so a white website heading will remain readable over it. Compose to work when cropped as a wide 250–300px dashboard banner; keep recognisable gym equipment on the right and no busy foreground on the left. TRUE monochrome: only black, white and neutral grays, no tinted or colored lighting. Editorial architectural photography, polished, realistic, understated. Absolutely no people, no visible brands, no lettering, no numbers, no logos, no watermarks, no screen UI, no decorative graphics. Generate only the image, not a website mockup.
+
+</details>
+
 ## Цель 100 абонементов и архив месяцев
 
-Над всеми тремя макетами показана цель месяца: число заполненных имён в
+В обоих макетах показана цель месяца: число заполненных имён в
 ежедневных вкладках `B6:B25`, прогресс `/100` и небольшой прирост за сегодня.
 Для текущего месяца карточка также показывает цель на сегодня, сколько до
 неё не хватает и цель на завтра, если сегодня больше не будет продаж.
@@ -52,7 +84,7 @@ Pages не выполняет Netlify Functions. Для работы кнопк�
 Внизу привычной карточки «Абонементы» раскрывается блок «Сроки абонементов».
 Он показывает истёкшие абонементы, последний день сегодня, окончание в течение
 3 и 7 дней, действующие абонементы и общее число записей в реестре.
-Дневные показатели, финансовые отчёты, три макета и выбор темы сохранены.
+Дневные показатели и финансовые отчёты доступны в обоих макетах.
 
 Основные числа читаются из готовых итогов вкладки «Сроки абонементов»
 (`A1:F4`); дополнительные — из дат вкладки «Абонементы» (`D4:I`).
@@ -88,7 +120,7 @@ Pages не выполняет Netlify Functions. Для работы кнопк�
 - Раскрывающаяся таблица дней и выгрузка CSV с датами и четырьмя числовыми показателями.
 
 Фильтры действуют только внутри нового отчёта: привычные месячные итоги,
-цель и существующие секции сохраняют свой период. Все три макета и темы
+цель и существующие секции сохраняют свой период. Оба макета и обе темы
 поддерживаются. Пропуски остаются «—», будущие дни исключены, сегодняшний
 день отмечен как незавершённый. Для прошлых месяцев быстрые периоды
 заканчиваются последним календарным днём исходного месяца; точные даты видны

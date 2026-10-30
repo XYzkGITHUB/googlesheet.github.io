@@ -1,0 +1,229 @@
+/* Achromatic ledger, seed 2116303808. The requested monochrome palette wins.
+   Centered report shell: one gym and daily reports need no account sidebar. */
+html[data-layout="v2"][data-theme] {
+  --v2-ground: #f5f5f5;
+  --v2-surface: #fff;
+  --v2-raised: #f2f2f2;
+  --v2-line: #e5e5e5;
+  --v2-ink: #181818;
+  --v2-muted: #626262;
+  --v2-inverse: #fff;
+  --v2-radius: 8px;
+  --surface: #fff;
+  --surface-2: #f5f5f5;
+  --surface-3: #ededed;
+  --border: #e5e5e5;
+  --text-strong: #181818;
+  --text-dim: #626262;
+  --accent: #252525;
+  --accent-2: #737373;
+  --pos: #252525;
+  --neg: #525252;
+  color-scheme: light;
+}
+
+html[data-layout="v2"][data-theme="dark"] {
+  --v2-ground: #101010;
+  --v2-surface: #181818;
+  --v2-raised: #222;
+  --v2-line: #323232;
+  --v2-ink: #f2f2f2;
+  --v2-muted: #ababab;
+  --v2-inverse: #171717;
+  --surface: #181818;
+  --surface-2: #202020;
+  --surface-3: #2b2b2b;
+  --border: #323232;
+  --text-strong: #f2f2f2;
+  --text-dim: #ababab;
+  --accent: #eee;
+  --accent-2: #aaa;
+  --pos: #eee;
+  --neg: #bdbdbd;
+  color-scheme: dark;
+}
+
+html[data-layout="v2"][data-theme] body { background: var(--v2-ground); color: var(--v2-ink); }
+
+.v2r {
+  /* 1180px canvas; two 582px panels plus a 16px gap. */
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  width: min(1180px, calc(100% - 48px));
+  margin: 0 auto;
+  padding: 0 0 52px;
+  color: var(--v2-ink);
+}
+
+.v2r > *, .v2r-columns > * { min-width: 0; }
+.v2r :where(h1, h2, h3) { color: var(--v2-ink); letter-spacing: -.025em; }
+.v2r :where(h2, h3) { margin: 0; font-size: 20px; font-weight: 600; line-height: 1.3; }
+.v2r :where(a, button, input, summary):focus-visible { outline-color: var(--v2-ink); }
+
+.v2r-nav { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 76px; }
+.v2r-wordmark { flex: 0 0 auto; color: var(--v2-ink); font-size: 22px; font-weight: 750; letter-spacing: -.05em; text-decoration: none; }
+.v2r-wordmark span { display: block; margin-top: 2px; color: var(--v2-muted); font-size: 11px; font-weight: 400; letter-spacing: 0; }
+.v2r-nav nav { display: flex; align-items: center; gap: 28px; }
+.v2r-nav nav a { display: inline-flex; align-items: center; min-height: 44px; color: var(--v2-muted); font-size: 13px; text-decoration: none; }
+.v2r-nav nav a:hover { color: var(--v2-ink); }
+.v2r-button { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 10px 15px; border: 1px solid var(--v2-line); border-radius: 6px; background: var(--v2-surface); color: var(--v2-ink); font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.v2r-refresh { border-color: var(--v2-ink); background: var(--v2-ink); color: var(--v2-inverse); }
+.v2r-button:hover { opacity: .8; }
+
+.v2r-banner {
+  display: flex;
+  align-items: center;
+  min-height: 188px;
+  margin-top: -20px;
+  padding: 28px 32px;
+  border-radius: var(--v2-radius);
+  background: #131313 url("/images/gym-atmosphere-v2.png") center 57% / cover no-repeat;
+  color: #fff;
+}
+.v2r-banner > div { max-width: 48%; }
+.v2r-banner p { margin: 0 0 12px; color: #d0d0d0; font-size: 12px; }
+.v2r-banner h1 { margin: 0; color: #fff; font-size: 32px; font-weight: 600; line-height: 1.1; }
+.v2r-banner span { display: block; margin-top: 12px; color: #d0d0d0; font-size: 13px; text-transform: capitalize; }
+
+.v2r-panel { padding: 24px; border: 1px solid var(--v2-line); border-radius: var(--v2-radius); background: var(--v2-surface); }
+.v2r-section-heading { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 18px; }
+.v2r-section-heading p, .v2r-section-heading > span { margin: 5px 0 0; color: var(--v2-muted); font-size: 12px; line-height: 1.5; }
+.v2r-section-heading p { text-transform: capitalize; }
+.v2r-inline-link, .v2r-text-button { min-height: 36px; padding: 8px 0; border: 0; background: transparent; color: var(--v2-ink); font: inherit; font-size: 12px; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+.v2r-days { display: flex; gap: 5px; max-width: 100%; padding: 4px 2px 8px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--v2-line) transparent; }
+.v2r-days button { display: grid; align-content: center; justify-items: center; flex: 0 0 44px; gap: 4px; min-height: 56px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--v2-ink); font: inherit; font-size: 15px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.v2r-days button small { color: var(--v2-muted); font-size: 11px; }
+.v2r-days button:hover { border-color: var(--v2-line); }
+.v2r-days button[aria-pressed="true"] { background: var(--v2-ink); color: var(--v2-inverse); }
+.v2r-days button[aria-pressed="true"] small { color: inherit; }
+.v2r-date-caption { margin: 14px 0 0; color: var(--v2-muted); font-size: 12px; }
+.v2r-metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; margin: 16px 0 0; }
+.v2r-metrics > div { min-width: 0; }
+.v2r-metrics dt { color: var(--v2-muted); font-size: 12px; line-height: 1.5; }
+.v2r-metrics dd { margin: 8px 0 0; color: var(--v2-ink); font-size: clamp(22px, 2.5vw, 30px); font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -.035em; line-height: 1.15; overflow-wrap: anywhere; }
+.v2r-metrics small { display: block; margin-top: 6px; color: var(--v2-muted); font-size: 11px; }
+.v2r-workday { display: flex; align-items: center; flex-wrap: wrap; gap: 10px 20px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--v2-line); color: var(--v2-muted); font-size: 12px; }
+.v2r-workday strong { color: var(--v2-ink); font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.v2r-workday-track { display: block; width: 100px; height: 4px; margin-left: auto; overflow: hidden; background: var(--v2-raised); }
+.v2r-workday-track i { display: block; height: 100%; background: var(--v2-ink); }
+.v2r-context { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px; margin: 20px 0 0; padding-top: 18px; border-top: 1px solid var(--v2-line); }
+.v2r-context dt, .v2r-context dd { margin: 0; font-size: 12px; line-height: 1.5; }
+.v2r-context dt { color: var(--v2-muted); }
+.v2r-context dd { margin-top: 5px; color: var(--v2-ink); font-weight: 600; font-variant-numeric: tabular-nums; }
+.v2r-columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; gap: 16px; }
+.v2r-breakdown { display: grid; gap: 18px; margin: 0; }
+.v2r-breakdown > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; }
+.v2r-breakdown dt { color: var(--v2-muted); font-size: 13px; }
+.v2r-breakdown dd { margin: 0; color: var(--v2-ink); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+.v2r-breakdown > div > span { grid-column: 1 / -1; height: 3px; background: var(--v2-raised); }
+.v2r-breakdown i { display: block; height: 100%; background: var(--v2-ink); }
+.v2r-table-wrap { max-width: 100%; overflow-x: auto; scrollbar-width: thin; }
+.v2r-table { width: 100%; min-width: 580px; border-collapse: collapse; color: var(--v2-ink); font-size: 13px; font-variant-numeric: tabular-nums; }
+.v2r-table th, .v2r-table td { padding: 13px 10px; text-align: right; white-space: nowrap; }
+.v2r-table th { font-weight: 500; }
+.v2r-table thead th { color: var(--v2-muted); font-size: 12px; }
+.v2r-table :where(th, td):first-child { padding-left: 0; text-align: left; }
+.v2r-table :where(th, td):last-child { padding-right: 0; }
+.v2r-table tbody tr + tr { border-top: 1px solid var(--v2-line); }
+.v2r-table th small { display: block; margin-top: 5px; color: var(--v2-muted); font-size: 11px; font-weight: 400; }
+.v2r-insights { display: grid; gap: 12px; margin: 0; padding-left: 18px; color: var(--v2-muted); font-size: 13px; line-height: 1.65; }
+.v2r-empty { margin: 0; padding: 12px 0; color: var(--v2-muted); font-size: 13px; line-height: 1.6; }
+.v2r-notices { padding: 12px 16px; border: 1px solid var(--v2-line); border-radius: 6px; background: var(--v2-raised); }
+.v2r-notices p { margin: 4px 0; color: var(--v2-ink); font-size: 12px; line-height: 1.5; }
+.v2r-archive-year + .v2r-archive-year { margin-top: 28px; }
+.v2r-archive-year h3 { font-size: 16px; }
+.v2r-archive-form { display: grid; gap: 10px; min-width: 180px; margin-top: 12px; white-space: normal; }
+.v2r-archive-form label { display: grid; gap: 5px; color: var(--v2-muted); font-size: 12px; }
+.v2r-archive-form input { min-width: 0; width: 100%; min-height: 40px; padding: 8px; border: 1px solid var(--v2-line); border-radius: 6px; background: var(--v2-raised); color: var(--v2-ink); font: inherit; }
+.v2r-archive-form > div { display: flex; gap: 6px; }
+.v2r-form-status { margin: 0; color: var(--v2-muted); font-size: 12px; font-weight: 400; }
+.v2r-footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; padding: 8px 0 0; color: var(--v2-muted); font-size: 12px; }
+.v2r-footer > div { display: flex; flex-wrap: wrap; gap: 10px 20px; }
+.v2r-footer strong { color: var(--v2-ink); font-size: 14px; }
+.v2r-footer a { min-height: 44px; padding-block: 12px; color: var(--v2-ink); text-decoration-thickness: 1px; text-underline-offset: 4px; }
+.v2r-loading-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding-block: 16px; }
+.v2r-loading-grid span { width: 70%; height: 30px; background: var(--v2-raised); }
+
+/* Compact restyle of the real goal DOM: IDs, health and calendar controls survive. */
+html[data-layout="v2"] #subscriptionGoal { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1.5fr); gap: 0 24px; width: 100%; margin: 0; padding: 24px; border: 1px solid var(--v2-line); border-radius: var(--v2-radius); background: var(--v2-surface); box-shadow: none; color: var(--v2-ink); }
+html[data-layout="v2"] .subscription-goal-top { grid-column: 1; grid-row: 1; }
+html[data-layout="v2"] .subscription-goal-kicker { margin-bottom: 6px; color: var(--v2-muted); font-size: 12px; font-weight: 400; letter-spacing: 0; text-transform: none; }
+html[data-layout="v2"] .subscription-goal h2 { color: var(--v2-ink); font-size: 20px; }
+html[data-layout="v2"] .subscription-goal-month { margin-top: 5px; color: var(--v2-muted); font-size: 12px; }
+html[data-layout="v2"] .subscription-goal-today { padding: 6px 9px; border-color: var(--v2-line); border-radius: 6px; background: var(--v2-raised); color: var(--v2-ink); font-size: 12px; font-weight: 500; }
+html[data-layout="v2"] .subscription-goal-count { grid-column: 2; grid-row: 1; align-self: center; margin: 0; gap: 6px; color: var(--v2-ink); font-size: 46px; font-weight: 600; letter-spacing: -.045em; line-height: 1; }
+html[data-layout="v2"] .subscription-goal-count strong { font-weight: 600; }
+html[data-layout="v2"] .subscription-goal-count span { color: var(--v2-muted); font-size: 22px; letter-spacing: -.02em; }
+html[data-layout="v2"] .subscription-goal-track { grid-column: 1 / 3; grid-row: 2; height: 6px; margin-top: 16px; border-radius: 2px; background: var(--v2-raised); }
+html[data-layout="v2"] .subscription-goal-track i { border-radius: 2px; background: var(--v2-ink); }
+html[data-layout="v2"] .subscription-goal-remaining { grid-column: 1 / 3; grid-row: 3; margin-top: 10px; color: var(--v2-muted); font-size: 12px; }
+html[data-layout="v2"] .subscription-goal-plan { grid-column: 3; grid-row: 1 / 4; align-self: center; margin-top: 0; }
+html[data-layout="v2"] .subscription-goal-plan-grid { gap: 14px; }
+html[data-layout="v2"] .subscription-goal-plan-grid > div { padding: 0; border: 0; border-radius: 0; background: transparent; }
+html[data-layout="v2"] .subscription-goal-plan-grid dt { color: var(--v2-muted); font-size: 12px; line-height: 1.4; }
+html[data-layout="v2"] .subscription-goal-plan-grid dd { margin-top: 10px; color: var(--v2-ink); font-size: 28px; font-weight: 600; }
+html[data-layout="v2"] .subscription-goal-plan-note,
+html[data-layout="v2"] .subscription-health-note,
+html[data-layout="v2"] .subscription-health > summary :where(small, .subscription-health-meta),
+html[data-layout="v2"] .subscription-health-grid dt { color: var(--v2-muted); }
+html[data-layout="v2"] .subscription-health, html[data-layout="v2"] .goal-quick-actions, html[data-layout="v2"] #dashboardRefreshFeedback { grid-column: 1 / -1; }
+html[data-layout="v2"] .subscription-health { margin-top: 18px; border-color: var(--v2-line); }
+html[data-layout="v2"] .subscription-health > summary,
+html[data-layout="v2"] .subscription-health > summary::after,
+html[data-layout="v2"] .subscription-health-grid dd,
+html[data-layout="v2"] .goal-quick-actions .feature-link { color: var(--v2-ink); }
+html[data-layout="v2"] .subscription-health-grid dd { font-size: 24px; font-weight: 600; }
+html[data-layout="v2"] .goal-quick-actions { margin-top: 0; }
+html[data-layout="v2"] .expiry-calendar { --feature-text: var(--v2-ink); --feature-muted: var(--v2-muted); --feature-border: var(--v2-line); --feature-surface: var(--v2-raised); --feature-selected-bg: var(--v2-ink); --feature-selected-text: var(--v2-inverse); --feature-selected-border: var(--v2-ink); }
+html[data-layout="v2"] .expiry-day i { background: var(--v2-ink); }
+html[data-layout="v2"] .expiry-day[aria-pressed="true"] { border-color: var(--v2-ink); background: var(--v2-surface); }
+html[data-layout="v2"] .expiry-day:hover, html[data-layout="v2"] .expiry-day.expiry-today { border-color: var(--v2-muted); }
+html[data-layout="v2"] .expiry-today .expiry-day-label { color: var(--v2-ink); }
+
+/* Existing report is moved into this layout, with all filters and exports intact. */
+html[data-layout="v2"] #periodReport { width: 100%; margin: 0; padding: 0; }
+html[data-layout="v2"] .report-panel { padding: 24px; border-color: var(--v2-line); border-radius: var(--v2-radius); background: var(--v2-surface); box-shadow: none; }
+html[data-layout="v2"] .feature-segments button,
+html[data-layout="v2"] .feature-button,
+html[data-layout="v2"] .report-range-form input,
+html[data-layout="v2"] .report-empty { border-radius: 6px; }
+html[data-layout="v2"] .report-bar, html[data-layout="v2"] .report-bar[data-negative="true"] { fill: var(--v2-ink); }
+html[data-layout="v2"] .report-metrics .delta { color: var(--v2-muted); }
+html[data-layout="v2"] .report-heading h2 { font-size: 20px; }
+html[data-layout="v2"] .report-metrics dd { font-size: 28px; }
+html[data-layout="v2"] .v2r [hidden] { display: none; }
+
+@media (max-width: 1000px) {
+  html[data-layout="v2"] #subscriptionGoal { grid-template-columns: minmax(180px, 1fr) minmax(0, 1fr); }
+  html[data-layout="v2"] .subscription-goal-count { grid-column: 1; grid-row: 2; margin: 16px 0 14px; }
+  html[data-layout="v2"] .subscription-goal-track { grid-column: 1; grid-row: 3; margin-top: 0; }
+  html[data-layout="v2"] .subscription-goal-remaining { grid-column: 1; grid-row: 4; }
+  html[data-layout="v2"] .subscription-goal-plan { grid-column: 2; grid-row: 1 / 5; }
+}
+
+@media (max-width: 850px) {
+  .v2r-nav { flex-wrap: wrap; gap: 12px; padding-block: 16px 0; }
+  .v2r-nav nav { order: 3; justify-content: space-between; width: 100%; gap: 12px; }
+  .v2r-banner { margin-top: -12px; }
+  .v2r-metrics, .v2r-context { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px 16px; }
+  html[data-layout="v2"] #subscriptionGoal { grid-template-columns: minmax(0, 1fr); }
+  html[data-layout="v2"] .subscription-goal-plan { grid-column: 1; grid-row: auto; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--v2-line); }
+}
+
+@media (max-width: 620px) {
+  .v2r { width: calc(100% - 32px); gap: 16px; }
+  .v2r-banner { min-height: 170px; margin-top: -8px; padding: 22px; background-position: 55% center; }
+  .v2r-banner > div { max-width: 65%; }
+  .v2r-banner h1 { font-size: 28px; }
+  .v2r-panel, html[data-layout="v2"] #subscriptionGoal, html[data-layout="v2"] .report-panel { padding: 18px; }
+  .v2r :where(h2, h3), html[data-layout="v2"] .report-heading h2 { font-size: 18px; }
+  .v2r-columns { grid-template-columns: minmax(0, 1fr); }
+  .v2r-metrics dd, html[data-layout="v2"] .report-metrics dd { font-size: 24px; }
+  html[data-layout="v2"] .subscription-goal-plan-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  html[data-layout="v2"] .subscription-goal-plan-grid > div { display: block; }
+  html[data-layout="v2"] .subscription-goal-plan-grid dd { margin-top: 10px; font-size: 25px; }
+  html[data-layout="v2"] .subscription-goal-count { font-size: 42px; }
+  html[data-layout="v2"] .subscription-goal-top { flex-wrap: nowrap; gap: 12px; }
+  .v2r-workday-track { width: 100%; margin: 0; }
+}

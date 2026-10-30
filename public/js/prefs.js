@@ -1,56 +1,66 @@
 const KEY = "gf-fit-prefs-v1";
 
 export const LAYOUTS = [
-  { id: "v1", name: "Классика", note: "Исходный вид. Плотная сетка карточек." },
-  { id: "v2", name: "Просто", note: "Крупно и понятно. Только главное." },
-  { id: "v3", name: "Максимум", note: "Все данные, графики и прогнозы." },
+  { id: "v1", name: "V1", note: "Привычный вид" },
+  { id: "v2", name: "V2", note: "Новый дизайн · те же показатели" },
 ];
 
 export const THEMES = [
-  { id: "auto", name: "Авто", dot: "linear-gradient(135deg,#f7f7f8 50%,#15171c 50%)" },
-  { id: "light", name: "Светлая", dot: "linear-gradient(135deg,#ffffff,#e7e9ee)" },
-  { id: "mint", name: "Мята", dot: "linear-gradient(135deg,#f2f7f4,#8fd9bb)" },
-  { id: "dark", name: "Темная", dot: "linear-gradient(135deg,#2a2d35,#15171c)" },
-  { id: "ocean", name: "Океан", dot: "linear-gradient(135deg,#0e3d4d,#22b8cf)" },
+  { id: "light", name: "Белая", dot: "#fff" },
+  { id: "dark", name: "Чёрная", dot: "#111" },
 ];
 
-// Keep the familiar layout as the default. "auto" is opt-in only.
+// Keep the familiar layout and explicit light theme as the defaults.
 const DEFAULTS = { layout: "v1", theme: "light" };
 
+export function normalizePrefs(value, systemDark = false) {
+  const prefs = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+  const layout = prefs.layout === "v3" ? "v2"
+    : LAYOUTS.some((item) => item.id === prefs.layout) ? prefs.layout : DEFAULTS.layout;
+  let theme = prefs.theme;
+  if (theme === "mint") theme = "light";
+  else if (theme === "ocean") theme = "dark";
+  else if (theme === "auto") theme = systemDark ? "dark" : "light";
+  if (!THEMES.some((item) => item.id === theme)) theme = DEFAULTS.theme;
+  return { layout, theme };
+}
+
+function systemIsDark() {
+  try { return typeof window !== "undefined" && window.matchMedia("(prefers-color-scheme: dark)").matches === true; }
+  catch { return false; }
+}
+
 export function readPrefs() {
+  let raw;
+  let parsed = {};
   try {
-    const raw = localStorage.getItem(KEY);
-    const parsed = raw ? JSON.parse(raw) : {};
-    const layout = LAYOUTS.some((item) => item.id === parsed.layout) ? parsed.layout : DEFAULTS.layout;
-    const theme = THEMES.some((item) => item.id === parsed.theme) ? parsed.theme : DEFAULTS.theme;
-    return { layout, theme };
-  } catch {
-    return { ...DEFAULTS };
-  }
+    raw = localStorage.getItem(KEY);
+    parsed = raw ? JSON.parse(raw) : {};
+  } catch { /* Unavailable or malformed storage falls back to the familiar view. */ }
+  const prefs = normalizePrefs(parsed, systemIsDark());
+  // Persist migration so a former system theme becomes one fixed choice.
+  try { if (raw && raw !== JSON.stringify(prefs)) localStorage.setItem(KEY, JSON.stringify(prefs)); }
+  catch { /* Preferences remain usable when storage is blocked. */ }
+  return prefs;
 }
 
 export function writePrefs(prefs) {
+  const normalized = normalizePrefs(prefs, systemIsDark());
   try {
-    localStorage.setItem(KEY, JSON.stringify(prefs));
+    localStorage.setItem(KEY, JSON.stringify(normalized));
   } catch {
     // preferences are a convenience; ignore storage failures
   }
-}
-
-const systemDark = window.matchMedia("(prefers-color-scheme: dark)");
-
-function resolveTheme(theme) {
-  if (theme !== "auto") return theme;
-  return systemDark.matches ? "dark" : "light";
+  return normalized;
 }
 
 export function applyTheme(theme) {
-  document.documentElement.dataset.theme = resolveTheme(theme);
-  document.documentElement.dataset.themeChoice = theme;
+  const prefs = readPrefs();
+  const selected = normalizePrefs({ ...prefs, theme }, systemIsDark());
+  document.documentElement.dataset.theme = selected.theme;
+  document.documentElement.dataset.themeChoice = selected.theme;
+  document.documentElement.dataset.layout = prefs.layout;
 }
 
-export function watchSystemTheme(onChange) {
-  systemDark.addEventListener("change", () => {
-    if (readPrefs().theme === "auto") onChange();
-  });
-}
+// Compatibility for existing app imports: White/Black never follow system changes.
+export function watchSystemTheme() {}

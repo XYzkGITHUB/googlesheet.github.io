@@ -4,7 +4,6 @@ import { SHEET_SOURCE } from "./config.js";
 const PREVIEWS = {
   v1: `<i class="pv a"></i><i class="pv a"></i><i class="pv a"></i><i class="pv a"></i><i class="pv a"></i><i class="pv a"></i>`,
   v2: `<i class="pv big"></i><i class="pv b"></i><i class="pv b"></i>`,
-  v3: `<i class="pv c"></i><i class="pv c"></i><i class="pv c"></i><i class="pv c"></i><i class="pv wide"></i><i class="pv c"></i><i class="pv c"></i><i class="pv c"></i>`,
 };
 
 let host = null;
@@ -12,6 +11,7 @@ let open = false;
 let onChange = () => {};
 let monthTools = {};
 let monthMessage = "";
+let advancedOpen = false;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[char]));
@@ -34,19 +34,21 @@ function archiveMarkup(items) {
 }
 
 function render() {
+  advancedOpen = host.querySelector(".tb-advanced")?.open ?? advancedOpen;
   const prefs = readPrefs();
   const monthData = monthTools.getMonthData?.() || {};
   const upcoming = nextMonth(monthData.period);
 
   host.innerHTML = `
-    <div class="tb-panel ${open ? "is-open" : ""}" role="dialog" aria-label="Настройки вида" aria-hidden="${!open}">
+    <div id="viewMenuPanel" class="tb-panel ${open ? "is-open" : ""}" role="dialog" aria-labelledby="viewMenuTitle" aria-hidden="${!open}">
+      <div class="tb-menu-heading"><h2 id="viewMenuTitle">Вид панели</h2><button type="button" class="tb-menu-close" data-menu-close aria-label="Закрыть настройки">×</button></div>
       <div class="tb-section">
         <p class="tb-title">Макет</p>
-        <div class="tb-layouts">
+        <div class="tb-layouts" role="group" aria-label="Макет панели">
           ${LAYOUTS.map((item) => `
-            <button type="button" class="tb-layout ${prefs.layout === item.id ? "active" : ""}" data-layout="${item.id}">
-              <span class="tb-preview ${item.id}">${PREVIEWS[item.id]}</span>
-              <strong>${item.name}<em>${item.id}</em></strong>
+            <button type="button" class="tb-layout ${prefs.layout === item.id ? "active" : ""}" data-layout="${item.id}" aria-pressed="${prefs.layout === item.id}">
+              <span class="tb-preview ${item.id}" aria-hidden="true">${PREVIEWS[item.id]}</span>
+              <strong>${item.name}<span class="tb-choice-check" aria-hidden="true">${prefs.layout === item.id ? "✓" : ""}</span></strong>
               <small>${item.note}</small>
             </button>
           `).join("")}
@@ -54,17 +56,21 @@ function render() {
       </div>
 
       <div class="tb-section">
-        <p class="tb-title">Тема</p>
-        <div class="tb-themes">
+        <p class="tb-title">Оформление</p>
+        <div class="tb-themes" role="group" aria-label="Цвет оформления">
           ${THEMES.map((theme) => `
-            <button type="button" class="tb-theme ${prefs.theme === theme.id ? "active" : ""}" data-theme="${theme.id}" title="${theme.name}">
-              <i style="background:${theme.dot}"></i>
+            <button type="button" class="tb-theme ${prefs.theme === theme.id ? "active" : ""}" data-theme="${theme.id}" aria-pressed="${prefs.theme === theme.id}">
+              <i style="background:${theme.dot}" aria-hidden="true"></i>
               <span>${theme.name}</span>
+              <span class="tb-choice-check" aria-hidden="true">${prefs.theme === theme.id ? "✓" : ""}</span>
             </button>
           `).join("")}
         </div>
       </div>
 
+      <details class="tb-advanced" ${advancedOpen ? "open" : ""}>
+      <summary>Дополнительно</summary>
+      <div class="tb-advanced-content">
       <div class="tb-section tb-month-section">
         <p class="tb-title">Новый месяц</p>
         <p class="tb-note">Текущий: ${escapeHtml(monthData.period || "загрузка")}. При создании итоги попадут в «Архив» Google Таблицы.</p>
@@ -82,10 +88,12 @@ function render() {
         <a class="tb-archive-link" href="${SHEET_SOURCE.archiveUrl}" target="_blank" rel="noreferrer">Открыть вкладку «Архив» ↗</a>
         <div class="tb-archive-list">${archiveMarkup(monthData.archives)}</div>
       </div>
+      </div>
+      </details>
 
     </div>
 
-    <button type="button" class="tb-fab tb-fab-menu ${open ? "is-open" : ""}" aria-label="Настройки вида" aria-expanded="${open}">
+    <button type="button" class="tb-fab tb-fab-menu ${open ? "is-open" : ""}" aria-label="Настройки вида" aria-controls="viewMenuPanel" aria-expanded="${open}">
       <span class="tb-burger"><i></i><i></i><i></i></span>
     </button>
   `;
@@ -107,25 +115,35 @@ export function mountToolbar(handler, tools = {}) {
     if (event.target.closest(".tb-fab-menu")) {
       open = !open;
       render();
+      host.querySelector(open ? ".tb-layout.active" : ".tb-fab-menu")?.focus({ preventScroll: true });
       return;
     }
 
-    const layoutButton = event.target.closest("[data-layout]");
+    if (event.target.closest("[data-menu-close]")) {
+      open = false;
+      render();
+      host.querySelector(".tb-fab-menu")?.focus({ preventScroll: true });
+      return;
+    }
+
+    const layoutButton = event.target.closest(".tb-layout[data-layout]");
     if (layoutButton) {
       const prefs = { ...readPrefs(), layout: layoutButton.dataset.layout };
       writePrefs(prefs);
       open = false;
       render();
       onChange();
+      host.querySelector(".tb-fab-menu")?.focus({ preventScroll: true });
       return;
     }
 
-    const themeButton = event.target.closest("[data-theme]");
+    const themeButton = event.target.closest(".tb-theme[data-theme]");
     if (themeButton) {
       const prefs = { ...readPrefs(), theme: themeButton.dataset.theme };
       writePrefs(prefs);
       applyTheme(prefs.theme);
       render();
+      host.querySelector(`[data-theme="${readPrefs().theme}"]`)?.focus({ preventScroll: true });
     }
   });
 
@@ -163,6 +181,7 @@ export function mountToolbar(handler, tools = {}) {
     if (event.key === "Escape" && open) {
       open = false;
       render();
+      host.querySelector(".tb-fab-menu")?.focus({ preventScroll: true });
     }
   });
 }
