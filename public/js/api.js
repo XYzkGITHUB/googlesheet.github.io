@@ -4,7 +4,7 @@ import { supabase } from "./supabaseClient.js";
 const GOOGLE_SHEETS = `https://docs.google.com/spreadsheets/d/${encodeURIComponent(SHEET_SOURCE.spreadsheetId)}`;
 
 async function readGoogleText(url) {
-  const response = await fetch(url, { cache: "no-store" });
+  const response = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(30000) });
   if (!response.ok) throw new Error("Не удалось загрузить данные Google Таблицы");
   const body = await response.text();
   if (body.trimStart().startsWith("<!DOCTYPE html") && url.includes("/export?")) {
@@ -37,7 +37,10 @@ export async function loadSheetCsv() {
   const html = await readGoogleText(`${GOOGLE_SHEETS}/edit?gid=${encodeURIComponent(SHEET_SOURCE.gid)}`);
   const tabs = workbookTabs(html);
   if (!tabs.length) throw new Error("Не удалось найти вкладки Google Таблицы");
-  const sheets = await mapWithConcurrency(tabs, 8, async ({ gid, name }) => ({
+  // Membership registries are read separately through anonymous ranges only.
+  // Their full client lists are not needed by the financial dashboard.
+  const reportTabs = tabs.filter(({ name }) => !/^(абонементы|хранилище абонементов|сроки абонементов)$/i.test(name.trim()));
+  const sheets = await mapWithConcurrency(reportTabs, 8, async ({ gid, name }) => ({
     name,
     csv: await readGoogleText(`${GOOGLE_SHEETS}/export?format=csv&gid=${encodeURIComponent(gid)}`),
   }));

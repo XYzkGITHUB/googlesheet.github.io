@@ -1,6 +1,8 @@
 export const SHEET_SOURCE = {
   spreadsheetId: "16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U",
   gid: "1382422924",
+  subscriptionSummaryGid: "2088764153",
+  membershipViewGid: "1688916357",
   url: "https://docs.google.com/spreadsheets/d/16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U/edit?gid=1382422924#gid=1382422924",
   archiveUrl: "https://docs.google.com/spreadsheets/d/16WmzN44H6jCYjgyUQ9WBX58FERS3cTKKjDBThntWs1U/edit?gid=1901370921#gid=1901370921",
 };

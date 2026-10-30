@@ -5,7 +5,7 @@ const MONTHS_PATH = "/api/months";
 
 export async function loadBridgeDashboard() {
   try {
-    const response = await fetch(DASHBOARD_PATH, { cache: "no-store" });
+    const response = await fetch(DASHBOARD_PATH, { cache: "no-store", signal: AbortSignal.timeout(30000) });
     if (!response.ok) return null;
     const payload = await response.json();
     return payload?.days && payload?.source?.period ? payload : null;

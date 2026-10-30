@@ -466,8 +466,9 @@ function wireDaySelectorArrows(container) {
   if (!prev || !next) return;
 
   const scrollAmount = () => Math.max(container.clientWidth * 0.7, 160);
-  prev.onclick = () => container.scrollBy({ left: -scrollAmount(), behavior: "smooth" });
-  next.onclick = () => container.scrollBy({ left: scrollAmount(), behavior: "smooth" });
+  const scrollBehavior = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+  prev.onclick = () => container.scrollBy({ left: -scrollAmount(), behavior: scrollBehavior() });
+  next.onclick = () => container.scrollBy({ left: scrollAmount(), behavior: scrollBehavior() });
   container.onscroll = () => updateDayArrowState(container, prev, next);
   updateDayArrowState(container, prev, next);
 }

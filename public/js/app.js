@@ -11,6 +11,7 @@ import { renderV3, updateV3Archive } from "./layoutV3.js";
 import { mountToolbar, refreshToolbar } from "./toolbar.js";
 import { renderSubscriptionGoal } from "./goal.js";
 import { loadBridgeDashboard, bridgeDashboardModel, createNextMonth, archiveToMonthlyHistory } from "./bridge.js";
+import { loadSubscriptionHealth, readSubscriptionHealthCache, renderSubscriptionHealth } from "./subscriptionHealth.js";
 
 const CACHE_KEY = "gf-fit-dashboard-cache-v3";
 
@@ -35,6 +36,17 @@ const editMonthHandler = (month, totals) => updateMonthlyTotals(month, totals).t
 
 // Last rendered state, so layout/theme switches re-render without refetching.
 let current = { model: null, meta: null };
+let subscriptionHealth = readSubscriptionHealthCache();
+let refreshPromise = null;
+let refreshing = false;
+
+function setRefreshing(value) {
+  refreshing = value;
+  for (const button of document.querySelectorAll('[data-action="refresh"]')) {
+    button.disabled = value;
+    button.setAttribute("aria-busy", String(value));
+  }
+}
 
 function monthLabel(month) {
   const [year, value] = String(month || "").split("-").map(Number);
@@ -91,8 +103,7 @@ function paint(model, meta) {
   }
 
   refreshToolbar();
-
-  window.scrollTo({ top: 0 });
+  setRefreshing(refreshing);
 }
 
 function repaint() {
@@ -138,7 +149,7 @@ async function loadDashboard() {
       const months = (bridge.archives || []).map(archiveToMonthlyHistory);
       paint(model, { fetchedAt: bridge.generatedAt, monthlyArchive: months, archiveReadOnly: true });
       writeCache({ model, monthlyArchive: months, meta: { fetchedAt: bridge.generatedAt, archiveReadOnly: true } });
-      return;
+      return true;
     }
     const payload = await loadSheetCsv();
     const normalized = Array.isArray(payload.sheets)
@@ -146,16 +157,49 @@ async function loadDashboard() {
       : normalizeRows(parseCsv(payload.csv));
     const model = buildDashboardModel(normalized, "live");
     renderThenSyncArchive(model, { fetchedAt: payload.fetchedAt }, cached?.monthlyArchive || []);
+    return true;
   } catch (error) {
     if (error.code === "GOOGLE_SHEET_NOT_PUBLIC") {
       const normalized = normalizeRows(SAMPLE_ROWS);
       const model = buildDashboardModel(normalized, "demo");
       const archivePayload = await loadMonthlyArchive().catch(() => ({ months: cached?.monthlyArchive || [] }));
       paint(model, { monthlyArchive: archivePayload.months || [] });
-      return;
+      return true;
     }
     if (!cached && readPrefs().layout === "v1") renderFatalError(error);
+    throw error;
   }
+}
+
+async function refreshSubscriptionHealth() {
+  renderSubscriptionHealth(subscriptionHealth, { loading: true });
+  try {
+    subscriptionHealth = await loadSubscriptionHealth();
+    renderSubscriptionHealth(subscriptionHealth);
+  } catch {
+    renderSubscriptionHealth(subscriptionHealth, { failed: true });
+  }
+}
+
+function refreshDashboard() {
+  if (refreshPromise) return refreshPromise;
+  setRefreshing(true);
+  const feedback = document.getElementById("dashboardRefreshFeedback");
+  feedback.hidden = true;
+  refreshPromise = Promise.allSettled([loadDashboard(), refreshSubscriptionHealth()])
+    .then(([dashboard]) => {
+      if (dashboard.status === "rejected") {
+        feedback.textContent = current.model
+          ? "Не удалось обновить отчёт. Показаны последние сохранённые показатели. Нажмите «Новые результаты», чтобы повторить."
+          : "Не удалось загрузить отчёт. Нажмите «Новые результаты», чтобы повторить.";
+        feedback.hidden = false;
+      }
+    })
+    .finally(() => {
+      setRefreshing(false);
+      refreshPromise = null;
+    });
+  return refreshPromise;
 }
 
 applyTheme(readPrefs().theme);
@@ -168,13 +212,13 @@ mountToolbar(repaint, {
   }),
   createMonth: async (period, adminToken, onProgress) => {
     const result = await createNextMonth(period, adminToken, onProgress);
-    if (result.complete) await loadDashboard();
+    if (result.complete) await refreshDashboard();
     return result;
   },
 });
 
 document.addEventListener("click", (event) => {
-  if (event.target.closest('[data-action="refresh"]')) loadDashboard();
+  if (event.target.closest('[data-action="refresh"]')) refreshDashboard();
 });
 
-loadDashboard();
+refreshDashboard();

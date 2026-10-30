@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/css/layouts.css" />
     <link rel="stylesheet" href="/css/toolbar.css" />
     <link rel="stylesheet" href="/css/goal.css" />
+    <link rel="stylesheet" href="/css/polish.css" />
   </head>
   <body>
     <section class="subscription-goal" id="subscriptionGoal" aria-labelledby="subscriptionGoalTitle">
@@ -31,6 +32,19 @@
         </dl>
         <p id="subscriptionGoalPlanNote" class="subscription-goal-plan-note"></p>
       </div>
+      <details id="subscriptionHealth" class="subscription-health">
+        <summary><span>Сроки абонементов <small id="subscriptionHealthSummary">Загрузка…</small></span></summary>
+        <dl id="subscriptionHealthGrid" class="subscription-health-grid" hidden>
+          <div data-metric="expired"><dt>Истекли</dt><dd id="subscriptionsExpired">—</dd></div>
+          <div data-metric="expiresToday"><dt>Последний день сегодня</dt><dd id="subscriptionsExpireToday">—</dd></div>
+          <div data-metric="expiringSoon"><dt>Истекают за 3 дня</dt><dd id="subscriptionsExpireSoon">—</dd></div>
+          <div><dt>Истекают за 7 дней</dt><dd id="subscriptionsExpireWeek">—</dd></div>
+          <div><dt>Действуют сейчас</dt><dd id="subscriptionsActive">—</dd></div>
+          <div><dt>Всего в реестре</dt><dd id="subscriptionsTotal">—</dd></div>
+        </dl>
+        <p id="subscriptionHealthNote" class="subscription-health-note" role="status" aria-live="polite">Загружаем только общие показатели из таблицы.</p>
+      </details>
+      <p id="dashboardRefreshFeedback" class="subscription-health-note" role="status" aria-live="polite" hidden></p>
     </section>
     <main class="shell" id="layoutV1">
       <section class="hero">

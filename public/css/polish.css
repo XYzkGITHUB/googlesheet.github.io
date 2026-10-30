@@ -1,0 +1,184 @@
+/* Small interaction improvements; the existing layouts and theme tokens stay in charge. */
+/* Keep the existing single-column shells inside the viewport on smaller screens. */
+.v2,
+.v3 {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.v2 > *,
+.v3 > * {
+  min-width: 0;
+}
+
+:where(button, a, input, select, textarea, summary):focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
+:where(.hero, .v2-top, .v3-top, .subscription-goal) :focus-visible {
+  outline-color: #d7f3aa;
+}
+
+button,
+summary {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+:where(.button, .day-chip, .day-nav-arrow, .tb-month-form button) {
+  transition: background-color 160ms ease, border-color 160ms ease,
+    opacity 160ms ease, transform 160ms ease;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+[data-action="refresh"]:disabled,
+[data-action="refresh"][aria-busy="true"] {
+  opacity: .65;
+  cursor: progress;
+  transform: none;
+}
+
+:where(.button, .v2-refresh, .icon-btn):disabled:hover {
+  transform: none;
+}
+
+:where(.metric, .today-hero, .compare-row, .product-stats,
+  .year-topline, .year-month, .k-cell, .rec, .prod-stats,
+  .v3-mini, .subscription-health, .bar-val) {
+  font-variant-numeric: tabular-nums;
+}
+
+/* The extra subscription figures expand inside the familiar monthly goal. */
+.subscription-health {
+  margin-top: 20px;
+  border-top: 1px solid rgba(201, 240, 153, .2);
+}
+
+.subscription-health > summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  padding: 10px 0;
+  color: #f5faf2;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  list-style: none;
+}
+
+.subscription-health > summary::-webkit-details-marker {
+  display: none;
+}
+
+.subscription-health > summary::after {
+  content: "+";
+  flex: 0 0 auto;
+  color: #c8dacb;
+  font-size: 20px;
+  font-weight: 400;
+}
+
+.subscription-health[open] > summary::after {
+  content: "\2212";
+}
+
+.subscription-health > summary :where(small, .subscription-health-meta) {
+  color: #c8dacb;
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.subscription-health-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px 20px;
+  margin: 8px 0 0;
+}
+
+.subscription-health-grid[hidden] { display: none; }
+
+.subscription-health-grid > div {
+  min-width: 0;
+}
+
+.subscription-health-grid dt {
+  color: #c8dacb;
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.subscription-health-grid dd {
+  margin: 6px 0 0;
+  color: #f5faf2;
+  font-size: 26px;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.subscription-health-grid [data-tone="warning"] dd {
+  color: #d7f3aa;
+}
+
+.subscription-health-grid [data-tone="expired"] dd {
+  color: #f7c6ba;
+}
+
+.subscription-health-note {
+  margin: 14px 0 0;
+  color: #c8dacb;
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .subscription-health-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+}
+
+/* Extend the hit area without moving the existing controls. */
+@media (pointer: coarse) {
+  .day-nav-arrow,
+  .icon-btn {
+    position: relative;
+  }
+
+  .day-nav-arrow::after,
+  .icon-btn::after {
+    content: "";
+    position: absolute;
+    inset: -5px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: .01ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
+
+  .trend-line {
+    stroke-dashoffset: 0;
+  }
+
+  .trend-area {
+    opacity: 1;
+  }
+}
